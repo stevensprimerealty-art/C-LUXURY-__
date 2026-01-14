@@ -201,122 +201,109 @@ document.querySelectorAll(".addToCart").forEach(btn => {
 });
 
 // =====================================================
-// WISHLIST — TRUE SWIPE/DRAG + INFINITE + INERTIA (FINAL)
+// WISHLIST — TRUE SWIPE/DRAG + INFINITE + INERTIA
 // =====================================================
 const slider = document.getElementById("wishlistSlider");
-const track = document.getElementById("wishlistTrack");
+const track  = document.getElementById("wishlistTrack");
 
 if (slider && track) {
   const originals = Array.from(track.children);
-  if (originals.length < 2) return; // ✅ safety check
 
-  // ✅ DEFINE CLONES FIRST
-  const cloneBefore = originals.map(node => node.cloneNode(true));
-  const cloneAfter  = originals.map(node => node.cloneNode(true));
+  // ✅ If not enough cards, just do nothing (NO return)
+  if (originals.length >= 2) {
 
-  // ✅ THEN INSERT THEM
-  cloneBefore.forEach(n => track.insertBefore(n, track.firstChild));
-  cloneAfter.forEach(n => track.appendChild(n));
+    const cloneBefore = originals.map(n => n.cloneNode(true));
+    const cloneAfter  = originals.map(n => n.cloneNode(true));
 
-  function setWidth(){
-    return originals.reduce(
-      (sum, el) => sum + el.getBoundingClientRect().width,
-      0
-    ) + (14 * (originals.length - 1));
-  }
+    cloneBefore.forEach(n => track.insertBefore(n, track.firstChild));
+    cloneAfter.forEach(n => track.appendChild(n));
 
-  let x = 0;
-  let isDown = false;
-  let startX = 0;
-  let startTranslate = 0;
-  let lastMoveTime = 0;
-  let lastMoveX = 0;
-  let velocity = 0;
-  let raf = null;
-
-  function apply(){
-    track.style.transform = `translate3d(${x}px,0,0)`;
-  }
-
-  function centerToMiddle(){
-    const w = setWidth();
-    x = -w;
-    apply();
-  }
-
-  function normalize(){
-    const w = setWidth();
-    if (x > 0) x -= w;
-    if (x < -2 * w) x += w;
-  }
-
-  function stopInertia(){
-    if (raf) cancelAnimationFrame(raf);
-    raf = null;
-  }
-
-  function inertiaStep(){
-    velocity *= 0.92;
-    x += velocity;
-    normalize();
-    apply();
-    if (Math.abs(velocity) > 0.2) {
-      raf = requestAnimationFrame(inertiaStep);
+    function setWidth(){
+      return originals.reduce((sum, el) => sum + el.getBoundingClientRect().width, 0)
+        + (14 * (originals.length - 1));
     }
-  }
 
-  function startDrag(clientX){
-    isDown = true;
-    stopInertia();
-    startX = clientX;
-    startTranslate = x;
-    velocity = 0;
-    lastMoveTime = performance.now();
-    lastMoveX = clientX;
-  }
+    let x = 0;
+    let isDown = false;
+    let startX = 0;
+    let startTranslate = 0;
+    let lastMoveTime = 0;
+    let lastMoveX = 0;
+    let velocity = 0;
+    let raf = null;
 
-  function dragMove(clientX){
-    if (!isDown) return;
-    const dx = clientX - startX;
-    x = startTranslate + dx;
-    normalize();
-    apply();
+    function apply(){ track.style.transform = `translate3d(${x}px,0,0)`; }
 
-    const now = performance.now();
-    const dt = Math.max(16, now - lastMoveTime);
-    velocity = ((clientX - lastMoveX) / dt) * 18;
-
-    lastMoveTime = now;
-    lastMoveX = clientX;
-  }
-
-  function endDrag(){
-    if (!isDown) return;
-    isDown = false;
-    if (Math.abs(velocity) > 0.2) {
-      raf = requestAnimationFrame(inertiaStep);
+    function centerToMiddle(){
+      const w = setWidth();
+      x = -w;
+      apply();
     }
+
+    function normalize(){
+      const w = setWidth();
+      if (x > 0) x -= w;
+      if (x < -2 * w) x += w;
+    }
+
+    function stopInertia(){
+      if (raf) cancelAnimationFrame(raf);
+      raf = null;
+    }
+
+    function inertiaStep(){
+      velocity *= 0.92;
+      x += velocity;
+      normalize();
+      apply();
+      if (Math.abs(velocity) > 0.2) raf = requestAnimationFrame(inertiaStep);
+    }
+
+    function startDrag(clientX){
+      isDown = true;
+      stopInertia();
+      startX = clientX;
+      startTranslate = x;
+      velocity = 0;
+      lastMoveTime = performance.now();
+      lastMoveX = clientX;
+    }
+
+    function dragMove(clientX){
+      if (!isDown) return;
+      const dx = clientX - startX;
+      x = startTranslate + dx;
+      normalize();
+      apply();
+
+      const now = performance.now();
+      const dt = Math.max(16, now - lastMoveTime);
+      velocity = ((clientX - lastMoveX) / dt) * 18;
+
+      lastMoveTime = now;
+      lastMoveX = clientX;
+    }
+
+    function endDrag(){
+      if (!isDown) return;
+      isDown = false;
+      if (Math.abs(velocity) > 0.2) raf = requestAnimationFrame(inertiaStep);
+    }
+
+    slider.addEventListener("pointerdown", (e) => {
+      slider.setPointerCapture(e.pointerId);
+      startDrag(e.clientX);
+    });
+    slider.addEventListener("pointermove", (e) => dragMove(e.clientX));
+    slider.addEventListener("pointerup", endDrag);
+    slider.addEventListener("pointercancel", endDrag);
+
+    slider.addEventListener("touchstart", (e) => startDrag(e.touches[0].clientX), { passive:true });
+    slider.addEventListener("touchmove", (e) => dragMove(e.touches[0].clientX), { passive:true });
+    slider.addEventListener("touchend", endDrag, { passive:true });
+    slider.addEventListener("touchcancel", endDrag, { passive:true });
+
+    window.addEventListener("resize", centerToMiddle);
+    centerToMiddle();
   }
-
-  slider.addEventListener("pointerdown", e => {
-    slider.setPointerCapture(e.pointerId);
-    startDrag(e.clientX);
-  });
-  slider.addEventListener("pointermove", e => dragMove(e.clientX));
-  slider.addEventListener("pointerup", endDrag);
-  slider.addEventListener("pointercancel", endDrag);
-
-  slider.addEventListener("touchstart", e => {
-    startDrag(e.touches[0].clientX);
-  }, { passive: true });
-
-  slider.addEventListener("touchmove", e => {
-    dragMove(e.touches[0].clientX);
-  }, { passive: true });
-
-  slider.addEventListener("touchend", endDrag, { passive: true });
-  slider.addEventListener("touchcancel", endDrag, { passive: true });
-
-  window.addEventListener("resize", centerToMiddle);
-  centerToMiddle();
 }
