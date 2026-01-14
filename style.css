@@ -1,12 +1,14 @@
 /* =============================
    C-LUXURY — FINAL style.css (COPY/PASTE)
    Fixes:
-   - Header no longer covers hero (adds hero top padding)
-   - Hero images framed more cinematic (center 20%)
-   - Wishlist cards bigger + cinematic on mobile + desktop
+   - Header never covers content (body padding-top)
+   - Hero stays full-screen clean (100vh minus header)
+   - Wishlist cards are PORTRAIT like your reference
+   - Wishlist swipe is SMOOTH + continuous on iPhone (native scroll)
    ============================= */
 
 *{margin:0;padding:0;box-sizing:border-box}
+
 :root{
   --black:#000;
   --white:#fff;
@@ -16,14 +18,18 @@
   --radius:18px;
 }
 
+/* Smooth page scroll */
+html{scroll-behavior:smooth}
+
 body{
   font-family:"Ashluxury", system-ui, -apple-system, Arial, sans-serif;
   background:#fff;
   color:#000;
   overflow-x:hidden;
+  padding-top:64px; /* ✅ content starts below fixed header */
 }
 
-/* HEADER */
+/* HEADER (stays fixed, does NOT move) */
 .header{
   position:fixed;
   top:0;left:0;right:0;
@@ -35,6 +41,7 @@ body{
   justify-content:space-between;
   padding:0 16px;
   z-index:1000;
+  transform:translateZ(0);
 }
 
 .logo-spray{
@@ -107,24 +114,20 @@ body{
 .cart-action-btn.ghost{color:var(--white);border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);backdrop-filter:blur(10px)}
 .cart-action-btn.solid{color:var(--white);border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.10);backdrop-filter:blur(10px)}
 
-/* HERO
-   ✅ Fix 1: header overlap — add top padding equal to header height
-*/
+/* HERO (true full screen below header) */
 .hero{
-  height:100vh;
+  height:calc(100vh - 64px);
   position:relative;
   overflow:hidden;
   background:#000;
-  padding-top:64px; /* ✅ header height */
 }
 
-/* ✅ Fix 2: cinematic framing (show more upper body/head) */
 .hero-slide{
   position:absolute;
   inset:0;
   background-size:cover;
   background-repeat:no-repeat;
-  background-position:center 20%; /* ✅ cinematic framing */
+  background-position:center 20%;
   opacity:0;
   transition:opacity 1s ease;
   filter:brightness(.60) contrast(1.05) saturate(1.04);
@@ -148,14 +151,7 @@ body{
   opacity:.12;transform:rotate(-8deg);z-index:2;pointer-events:none;mix-blend-mode:overlay;
 }
 
-/* Place text safely above bottom, and inside padded hero */
-.hero-content{
-  position:absolute;
-  left:18px; right:18px;
-  bottom:78px;
-  z-index:3;
-  color:var(--white);
-}
+.hero-content{position:absolute;left:18px;right:18px;bottom:78px;z-index:3;color:var(--white)}
 .hero-content h1{
   font-size:22px;line-height:1.25;letter-spacing:1px;font-weight:600;
   opacity:.98;transition:opacity .6s ease, transform .6s ease;
@@ -182,43 +178,55 @@ body{
 .section-title{font-size:14px;letter-spacing:2px;font-weight:700;margin:0 0 14px}
 .spray-subtitle{font-family:system-ui,-apple-system,Arial,sans-serif;font-weight:900;letter-spacing:2px}
 
-/* WISHLIST — swipe + infinite */
+/* =====================================================
+   WISHLIST — PORTRAIT + SMOOTH CONTINUOUS SWIPE (native)
+   ===================================================== */
 .wishlist-slider{
-  overflow:hidden;
+  overflow-x:auto;                /* ✅ native horizontal scroll */
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch; /* ✅ iPhone momentum */
+  scroll-snap-type:x mandatory;   /* ✅ snaps nicely */
   border-radius:var(--radius);
   user-select:none;
-  touch-action:pan-x;
+  padding-bottom:8px;
 }
+.wishlist-slider::-webkit-scrollbar{height:0}
+
 .wishlist-track{
   display:flex;
-  gap:14px;
-  padding:2px 0;
-  will-change:transform;
+  gap:16px;
+  padding:2px 0 6px;
 }
-.wishlist-track .card{flex:0 0 auto}
 
-/* ✅ Fix 3: WISHLIST bigger cinematic */
+/* portrait card like your reference */
+.wishlist-track .card{flex:0 0 auto; scroll-snap-align:start}
+
 .card{
-  min-width:320px;
-  height:180px;
-  border-radius:var(--radius);
+  width:min(78vw, 340px);         /* big on mobile, capped */
+  aspect-ratio:3/4;               /* ✅ portrait */
+  border-radius:22px;
   background:#0f0f0f;
   position:relative;
   overflow:hidden;
 }
+
+/* fill clean; keep top text visible */
 .card img{
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
   object-fit:cover;
-  padding:0;
-  background:#0f0f0f;
+  object-position:50% 15%;
 }
+
 .card::after{
   content:"";position:absolute;inset:0;
-  background:linear-gradient(135deg, rgba(0,0,0,.15), rgba(0,0,0,0));
-  opacity:.9;
+  background:linear-gradient(135deg, rgba(0,0,0,.12), rgba(0,0,0,0));
+  opacity:.85;
   pointer-events:none;
 }
+
 .hint{
   margin-top:10px;
   font-size:11px;
@@ -277,4 +285,27 @@ body{
 .checker{
   width:34px;height:18px;border-radius:6px;
   background:
-    linear-gradient(45deg,#000 25%,transparent 25%) -6px 0/12
+    linear-gradient(45deg,#000 25%,transparent 25%) -6px 0/12px 12px,
+    linear-gradient(-45deg,#000 25%,transparent 25%) -6px 0/12px 12px,
+    linear-gradient(45deg,transparent 75%,#000 75%) -6px 0/12px 12px,
+    linear-gradient(-45deg,transparent 75%,#000 75%) -6px 0/12px 12px;
+  opacity:.85;
+}
+
+/* DESKTOP */
+@media (min-width: 900px){
+  body{padding-top:74px}
+  .header{height:74px;padding:0 28px}
+  .logo-spray{font-size:20px;letter-spacing:3px}
+  .icon-svg{width:22px;height:22px}
+
+  .hero{height:calc(100vh - 74px)}
+  .hero-content{left:64px;right:auto;bottom:90px;max-width:560px}
+  .hero-content h1{font-size:34px;letter-spacing:1.5px}
+
+  .section-pad{padding:34px 64px}
+  .section-title{font-size:15px}
+
+  .product{min-width:300px}
+  .product img,.product.placeholder .ph-img{height:360px}
+}
