@@ -153,7 +153,7 @@ body{
   overflow:hidden;
   border-radius:var(--radius);
   user-select:none;
-  touch-action:pan-y;
+  touch-action: pan-x;
 }
 .wishlist-track{
   display:flex;
