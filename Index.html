@@ -1,1 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C-LUXURY</title>
 
+  <!-- Ashluxury fonts -->
+  <link rel="stylesheet" href="https://ashluxury.com/wp-content/themes/ashluxury/assets/css/fonts.css">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo-spray">C-LUXURY</div>
+
+  <div class="header-icons">
+    <a class="icon-link" href="https://mrcharliestxs.myshopify.com/search" aria-label="Search">
+      <!-- Search SVG -->
+      <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M16.5 16.5 21 21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </a>
+
+    <button class="icon-btn" id="cartBtn" aria-label="Cart">
+      <!-- Cart SVG -->
+      <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.5 7.5h15l-1.3 7.5H8.2L6.5 7.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M6.5 7.5 5.7 4.5H3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+    </button>
+
+    <button class="icon-btn" id="menuBtn" aria-label="Menu">
+      <!-- Hamburger SVG -->
+      <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- MENU OVERLAY -->
+<div class="menu-overlay" id="menu" aria-hidden="true">
+  <button class="close-menu" id="closeMenu" aria-label="Close Menu">✕</button>
+
+  <nav class="menu-nav">
+    <a href="#" class="menu-item"><span>C-NEW COLLECTION</span><span class="arrow">→</span></a>
+    <a href="#" class="menu-item"><span>MEN</span><span class="arrow">→</span></a>
+    <a href="#" class="menu-item"><span>WOMEN</span><span class="arrow">→</span></a>
+    <a href="#" class="menu-item"><span>DESIGNERS</span><span class="arrow">→</span></a>
+    <a href="#" class="menu-item"><span>SNEAKERS</span><span class="arrow">→</span></a>
+    <a href="#" class="menu-item"><span>GIFTS</span><span class="arrow">→</span></a>
+    <a href="#" class="menu-item"><span>WISHLISTS</span><span class="arrow">→</span></a>
+  </nav>
+
+  <div class="menu-account">
+    <span class="person">👤</span>
+    <a href="https://mrcharliestxs.myshopify.com/account" class="account-link">REGISTER / LOGIN</a>
+  </div>
+</div>
+
+<!-- CART DRAWER -->
+<aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
+  <div class="cart-head">
+    <div class="cart-title">CART</div>
+    <button class="cart-close" id="cartClose" aria-label="Close Cart">✕</button>
+  </div>
+
+  <iframe
+    id="cartFrame"
+    class="cart-frame"
+    src="https://mrcharliestxs.myshopify.com/cart"
+    title="Shopify Cart">
+  </iframe>
+
+  <div class="cart-actions">
+    <a class="cart-action-btn ghost" href="https://mrcharliestxs.myshopify.com/cart" target="_blank" rel="noreferrer">
+      OPEN CART
+    </a>
+    <a class="cart-action-btn solid" href="https://mrcharliestxs.myshopify.com/checkout" target="_blank" rel="noreferrer">
+      CHECKOUT
+    </a>
+  </div>
+</aside>
+<div class="backdrop" id="backdrop" hidden></div>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <!-- Replace with your JPG filenames -->
+  <div class="hero-slide active" style="background-image:url('img1.jpg')"></div>
+  <div class="hero-slide" style="background-image:url('img2.jpg')"></div>
+  <div class="hero-slide" style="background-image:url('img3.jpg')"></div>
+  <div class="hero-slide" style="background-image:url('img4.jpg')"></div>
+  <div class="hero-slide" style="background-image:url('img5.jpg')"></div>
+  <div class="hero-slide" style="background-image:url('img6.jpg')"></div>
+
+  <div class="hero-content">
+    <h1 id="heroText">A NEW YEAR<br>WITH PRESENCE</h1>
+    <div class="rings" id="rings" aria-label="Hero slide navigation"></div>
+
+    <a class="shop-btn" href="https://mrcharliestxs.myshopify.com/collections/all">
+      SHOP NOW
+    </a>
+  </div>
+</section>
+
+<!-- WISHLIST ROW — TRUE SWIPE + INFINITE -->
+<section class="slide-cards">
+  <div class="section-pad">
+    <div class="wishlist-slider" id="wishlistSlider" aria-label="Wishlist categories slider">
+      <div class="wishlist-track" id="wishlistTrack">
+        <div class="card">WISHLIST</div>
+        <div class="card">FOR HER</div>
+        <div class="card">FOR HIM</div>
+        <div class="card">SPECIAL ITEMS</div>
+        <div class="card">DIGITAL GIFTS</div>
+      </div>
+    </div>
+    <div class="hint">SWIPE →</div>
+  </div>
+</section>
+
+<!-- NEW ARRIVALS -->
+<section class="arrivals" id="arrivals">
+  <div class="section-pad">
+    <h2 class="section-title">C-NEW ARRIVALS</h2>
+
+    <div class="products" aria-label="New arrivals products slider">
+      <article class="product">
+        <img src="white.jpg" alt="C-TANK WHITE SKULL JERSEY">
+        <div class="p-meta">
+          <p class="p-name">C-TANK WHITE SKULL JERSEY</p>
+          <span class="p-price">$21.39</span>
+        </div>
+        <button class="buy-chip">BUY NOW</button>
+        <div class="overlay">
+          <a class="swift" href="https://mrcharliestxs.myshopify.com/checkouts/cn/hWN7bXI1mzSWdoWAiE1qWwUs/en-ng?_r=AQABcWVtgWO3XvH6QQ1oGY_v6BodcBPQntnXTy-QLrYs2Wo" target="_blank" rel="noreferrer">SWIFT BUY</a>
+          <button class="cart addToCart" data-variant="43883754520627">ADD TO CART</button>
+        </div>
+      </article>
+
+      <article class="product">
+        <img src="black.jpg" alt="C-TANK BLACK SKULL JERSEY">
+        <div class="p-meta">
+          <p class="p-name">C-TANK BLACK SKULL JERSEY</p>
+          <span class="p-price">$21.39</span>
+        </div>
+        <button class="buy-chip">BUY NOW</button>
+        <div class="overlay">
+          <a class="swift" href="https://mrcharliestxs.myshopify.com/checkouts/cn/hWN7bXI1mzSWdoWAiE1qWwUs/en-ng?_r=AQABcWVtgWO3XvH6QQ1oGY_v6BodcBPQntnXTy-QLrYs2Wo" target="_blank" rel="noreferrer">SWIFT BUY</a>
+          <button class="cart addToCart" data-variant="43883754324019">ADD TO CART</button>
+        </div>
+      </article>
+
+      <article class="product">
+        <img src="red.jpg" alt="C-TANK RED SKULL JERSEY">
+        <div class="p-meta">
+          <p class="p-name">C-TANK RED SKULL JERSEY</p>
+          <span class="p-price">$21.39</span>
+        </div>
+        <button class="buy-chip">BUY NOW</button>
+        <div class="overlay">
+          <a class="swift" href="https://mrcharliestxs.myshopify.com/checkouts/cn/hWN7bXI1mzSWdoWAiE1qWwUs/en-ng?_r=AQABcWVtgWO3XvH6QQ1oGY_v6BodcBPQntnXTy-QLrYs2Wo" target="_blank" rel="noreferrer">SWIFT BUY</a>
+          <button class="cart addToCart" data-variant="43883754455091">ADD TO CART</button>
+        </div>
+      </article>
+
+      <article class="product">
+        <img src="green.jpg" alt="C-TANK LEAF GREEN SKULL JERSEY">
+        <div class="p-meta">
+          <p class="p-name">C-TANK LEAF GREEN SKULL JERSEY</p>
+          <span class="p-price">$21.39</span>
+        </div>
+        <button class="buy-chip">BUY NOW</button>
+        <div class="overlay">
+          <a class="swift" href="https://mrcharliestxs.myshopify.com/checkouts/cn/hWN7bXI1mzSWdoWAiE1qWwUs/en-ng?_r=AQABcWVtgWO3XvH6QQ1oGY_v6BodcBPQntnXTy-QLrYs2Wo" target="_blank" rel="noreferrer">SWIFT BUY</a>
+          <button class="cart addToCart" data-variant="43883754422323">ADD TO CART</button>
+        </div>
+      </article>
+
+      <article class="product">
+        <img src="grey.jpg" alt="C-TANK DARK GREY SKULL JERSEY">
+        <div class="p-meta">
+          <p class="p-name">C-TANK DARK GREY SKULL JERSEY</p>
+          <span class="p-price">$21.39</span>
+        </div>
+        <button class="buy-chip">BUY NOW</button>
+        <div class="overlay">
+          <a class="swift" href="https://mrcharliestxs.myshopify.com/checkouts/cn/hWN7bXI1mzSWdoWAiE1qWwUs/en-ng?_r=AQABcWVtgWO3XvH6QQ1oGY_v6BodcBPQntnXTy-QLrYs2Wo" target="_blank" rel="noreferrer">SWIFT BUY</a>
+          <button class="cart addToCart" data-variant="43883754356787">ADD TO CART</button>
+        </div>
+      </article>
+    </div>
+
+    <!-- MEN collection link (default) -->
+    <a class="view-more" href="https://mrcharliestxs.myshopify.com/collections/men" aria-label="View more to Men collection">
+      <span class="checker"></span>
+      VIEW MORE →
+    </a>
+  </div>
+</section>
+
+<!-- C-CROPPED LUXURY WEARS -->
+<section class="cropped" id="cropped">
+  <div class="section-pad">
+    <h2 class="section-title spray-subtitle">C-CROPPED LUXURY WEARS</h2>
+
+    <div class="products" aria-label="Cropped luxury wears slider">
+      <article class="product placeholder">
+        <div class="ph-img">COMING SOON</div>
+        <div class="p-meta">
+          <p class="p-name">C-CROPPED LUXURY WEAR</p>
+          <span class="p-price">—</span>
+        </div>
+        <button class="buy-chip">BUY NOW</button>
+        <div class="overlay">
+          <a class="swift" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">SHOP</a>
+          <a class="cart" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">VIEW</a>
+        </div>
+      </article>
+
+      <article class="product placeholder">
+        <div class="ph-img">COMING SOON</div>
+        <div class="p-meta">
+          <p class="p-name">C-CROPPED LUXURY WEAR</p>
+          <span class="p-price">—</span>
+        </div>
+        <button class="buy-chip">BUY NOW</button>
+        <div class="overlay">
+          <a class="swift" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">SHOP</a>
+          <a class="cart" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">VIEW</a>
+        </div>
+      </article>
+
+      <article class="product placeholder">
+        <div class="ph-img">COMING SOON</div>
+        <div class="p-meta">
+          <p class="p-name">C-CROPPED LUXURY WEAR</p>
+          <span class="p-price">—</span>
+        </div>
+        <button class="buy-chip">BUY NOW</button>
+        <div class="overlay">
+          <a class="swift" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">SHOP</a>
+          <a class="cart" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">VIEW</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<script src="main.js"></script>
+</body>
+</html>
