@@ -1,10 +1,9 @@
 /* =============================
    C-LUXURY — FINAL main.js (COPY/PASTE)
-   Matches your latest CSS:
-   - Header fixed (CSS handles spacing)
-   - Hero slider autoplay + dots + text change
-   - Add to cart works
-   - Wishlist is NATIVE scroll (NO wishlist JS)
+   - Menu / Cart stable
+   - Hero slider + rings stable
+   - Product overlay + add-to-cart stable
+   - Wishlist uses NATIVE scroll (CSS handles smooth touch)
    ============================= */
 
 const SHOPIFY = {
@@ -29,41 +28,31 @@ const heroText = document.getElementById("heroText");
 const ringsWrap = document.getElementById("rings");
 const slides = Array.from(document.querySelectorAll(".hero-slide"));
 
-// =============================
-// MENU
-// =============================
-function openMenu() {
+// ===== Menu
+function openMenu(){
   if (!menu || !backdrop) return;
   menu.setAttribute("aria-hidden", "false");
   backdrop.hidden = false;
 }
-function closeMenuFn() {
+function closeMenuFn(){
   if (!menu) return;
   menu.setAttribute("aria-hidden", "true");
-  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")) {
-    backdrop.hidden = true;
-  }
+  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")) backdrop.hidden = true;
 }
 if (menuBtn) menuBtn.addEventListener("click", openMenu);
 if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
 
-// =============================
-// CART
-// =============================
-function openCart() {
+// ===== Cart
+function openCart(){
   if (!cartDrawer || !backdrop) return;
   cartDrawer.setAttribute("aria-hidden", "false");
   backdrop.hidden = false;
-
-  // refresh iframe so it shows latest cart state
   if (cartFrame) cartFrame.src = SHOPIFY.cartUrl + "?t=" + Date.now();
 }
-function closeCart() {
+function closeCart(){
   if (!cartDrawer) return;
   cartDrawer.setAttribute("aria-hidden", "true");
-  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false")) {
-    backdrop.hidden = true;
-  }
+  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false")) backdrop.hidden = true;
 }
 if (cartBtn) cartBtn.addEventListener("click", openCart);
 if (cartClose) cartClose.addEventListener("click", closeCart);
@@ -74,7 +63,6 @@ if (backdrop) {
     closeCart();
   });
 }
-
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeMenuFn();
@@ -82,9 +70,7 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-// =============================
-// HERO SLIDER + DOTS
-// =============================
+// ===== Hero slider + rings
 const texts = [
   "A NEW YEAR<br>WITH PRESENCE",
   "SILENCE<br>CONNOTES NOISE",
@@ -98,88 +84,66 @@ const INTERVAL = 4300;
 let index = 0;
 let timer = null;
 
-function buildRings() {
+function buildRings(){
   if (!ringsWrap || !slides.length) return;
-
   ringsWrap.innerHTML = "";
   slides.forEach((_, i) => {
     const b = document.createElement("button");
     b.className = "ring" + (i === 0 ? " is-active" : "");
     b.type = "button";
-    b.setAttribute("aria-label", `Go to slide ${i + 1}`);
+    b.setAttribute("aria-label", `Go to slide ${i+1}`);
     b.addEventListener("click", () => goToSlide(i, true));
     ringsWrap.appendChild(b);
   });
 }
-
-function setActiveRing(i) {
+function setActiveRing(i){
   if (!ringsWrap) return;
   const all = ringsWrap.querySelectorAll(".ring");
   all.forEach(r => r.classList.remove("is-active"));
   if (all[i]) all[i].classList.add("is-active");
 }
-
-function goToSlide(i, resetTimer = false) {
+function goToSlide(i, resetTimer = false){
   if (!slides.length) return;
-
-  // clamp
-  i = ((i % slides.length) + slides.length) % slides.length;
 
   if (heroText) heroText.classList.add("fadeout");
 
   setTimeout(() => {
     slides.forEach(s => s.classList.remove("active"));
     slides[i].classList.add("active");
-
     if (heroText) {
       heroText.innerHTML = texts[i] || "";
       heroText.classList.remove("fadeout");
     }
-
     setActiveRing(i);
     index = i;
   }, 220);
 
   if (resetTimer) restartTimer();
 }
-
-function nextSlide() {
+function nextSlide(){
   goToSlide((index + 1) % slides.length, false);
 }
-
-function restartTimer() {
+function restartTimer(){
   if (timer) clearInterval(timer);
   timer = setInterval(nextSlide, INTERVAL);
 }
 
-if (slides.length) {
-  buildRings();
-  restartTimer();
-}
+buildRings();
+restartTimer();
 
-// =============================
-// PRODUCT OVERLAY TAP
-// =============================
+// ===== Product overlay tap + add to cart
 const products = Array.from(document.querySelectorAll(".product"));
-
 products.forEach(p => {
   p.addEventListener("click", (e) => {
     const el = e.target;
-
-    // do not toggle overlay if clicking buttons/links
-    if (
-      el.closest("a") ||
-      el.closest("button.addToCart") ||
-      el.classList.contains("buy-chip")
-    ) return;
-
+    if (el.closest("a") || el.closest("button.addToCart") || el.classList.contains("buy-chip")) return;
     const isOpen = p.classList.contains("is-open");
     products.forEach(x => x.classList.remove("is-open"));
     if (!isOpen) p.classList.add("is-open");
   });
 
   const chip = p.querySelector(".buy-chip");
-  if (chip) {
+  if (chip){
     chip.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -188,16 +152,11 @@ products.forEach(p => {
     });
   }
 });
-
-// click outside closes overlays
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".product")) products.forEach(x => x.classList.remove("is-open"));
 });
 
-// =============================
-// ADD TO CART (Shopify via hidden iframe)
-// =============================
-function addToCartViaIframe(variantId) {
+function addToCartViaIframe(variantId){
   return new Promise((resolve) => {
     const iframe = document.createElement("iframe");
     iframe.style.width = "0";
@@ -205,7 +164,6 @@ function addToCartViaIframe(variantId) {
     iframe.style.border = "0";
     iframe.style.position = "absolute";
     iframe.style.left = "-9999px";
-
     iframe.src = SHOPIFY.cartAddPermalink(variantId, 1);
 
     iframe.onload = () => {
@@ -214,7 +172,6 @@ function addToCartViaIframe(variantId) {
         resolve();
       }, 400);
     };
-
     document.body.appendChild(iframe);
   });
 }
@@ -231,29 +188,17 @@ document.querySelectorAll(".addToCart").forEach(btn => {
     btn.textContent = "ADDING…";
     btn.disabled = true;
 
-    try {
-      await addToCartViaIframe(variantId);
+    await addToCartViaIframe(variantId);
 
-      btn.textContent = "ADDED";
-      setTimeout(() => {
-        btn.textContent = original;
-        btn.disabled = false;
-      }, 900);
+    btn.textContent = "ADDED";
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.disabled = false;
+    }, 900);
 
-      openCart();
-    } catch {
-      btn.textContent = "ERROR";
-      setTimeout(() => {
-        btn.textContent = original;
-        btn.disabled = false;
-      }, 900);
-    }
+    openCart();
   });
 });
 
-/* =====================================================
-   WISHLIST NOTE:
-   Your wishlist is now native scroll via CSS:
-   .wishlist-slider { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-   So we intentionally do NOT run wishlist JS here.
-   ===================================================== */
+// ✅ Wishlist: NO JS drag / NO transform / NO cloning
+// CSS handles native smooth horizontal scroll on iPhone.
