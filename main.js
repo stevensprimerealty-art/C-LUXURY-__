@@ -79,7 +79,7 @@ const texts = [
   "PRESENCE<br>WITHOUT NOISE",
   "SILENCE IS POWER",
   "LUXURY<br>WITHOUT NOISE"
-];
+].slice(0, slides.length);
 
 const INTERVAL = 4300;
 let index = 0;
@@ -208,27 +208,35 @@ const track = document.getElementById("wishlistTrack");
 
 if (slider && track) {
   const originals = Array.from(track.children);
+  if (originals.length < 2) return; // ✅ safety check
+
+  // ✅ DEFINE CLONES FIRST
   const cloneBefore = originals.map(node => node.cloneNode(true));
   const cloneAfter  = originals.map(node => node.cloneNode(true));
 
+  // ✅ THEN INSERT THEM
   cloneBefore.forEach(n => track.insertBefore(n, track.firstChild));
   cloneAfter.forEach(n => track.appendChild(n));
 
   function setWidth(){
-    return originals.reduce((sum, el) => sum + el.getBoundingClientRect().width, 0) + (14 * (originals.length - 1));
+    return originals.reduce(
+      (sum, el) => sum + el.getBoundingClientRect().width,
+      0
+    ) + (14 * (originals.length - 1));
   }
 
   let x = 0;
   let isDown = false;
   let startX = 0;
   let startTranslate = 0;
-
   let lastMoveTime = 0;
   let lastMoveX = 0;
   let velocity = 0;
   let raf = null;
 
-  function apply(){ track.style.transform = `translate3d(${x}px,0,0)`; }
+  function apply(){
+    track.style.transform = `translate3d(${x}px,0,0)`;
+  }
 
   function centerToMiddle(){
     const w = setWidth();
@@ -239,7 +247,7 @@ if (slider && track) {
   function normalize(){
     const w = setWidth();
     if (x > 0) x -= w;
-    if (x < -2*w) x += w;
+    if (x < -2 * w) x += w;
   }
 
   function stopInertia(){
@@ -252,7 +260,9 @@ if (slider && track) {
     x += velocity;
     normalize();
     apply();
-    if (Math.abs(velocity) > 0.2) raf = requestAnimationFrame(inertiaStep);
+    if (Math.abs(velocity) > 0.2) {
+      raf = requestAnimationFrame(inertiaStep);
+    }
   }
 
   function startDrag(clientX){
@@ -274,8 +284,7 @@ if (slider && track) {
 
     const now = performance.now();
     const dt = Math.max(16, now - lastMoveTime);
-    const vx = (clientX - lastMoveX) / dt;
-    velocity = vx * 18;
+    velocity = ((clientX - lastMoveX) / dt) * 18;
 
     lastMoveTime = now;
     lastMoveX = clientX;
@@ -284,27 +293,25 @@ if (slider && track) {
   function endDrag(){
     if (!isDown) return;
     isDown = false;
-    if (Math.abs(velocity) > 0.2) raf = requestAnimationFrame(inertiaStep);
+    if (Math.abs(velocity) > 0.2) {
+      raf = requestAnimationFrame(inertiaStep);
+    }
   }
 
-  // Pointer
-  slider.addEventListener("pointerdown", (e) => {
+  slider.addEventListener("pointerdown", e => {
     slider.setPointerCapture(e.pointerId);
     startDrag(e.clientX);
   });
-  slider.addEventListener("pointermove", (e) => dragMove(e.clientX));
+  slider.addEventListener("pointermove", e => dragMove(e.clientX));
   slider.addEventListener("pointerup", endDrag);
   slider.addEventListener("pointercancel", endDrag);
 
-  // Touch fallback (iPhone Safari)
-  slider.addEventListener("touchstart", (e) => {
-    const t = e.touches[0];
-    startDrag(t.clientX);
+  slider.addEventListener("touchstart", e => {
+    startDrag(e.touches[0].clientX);
   }, { passive: true });
 
-  slider.addEventListener("touchmove", (e) => {
-    const t = e.touches[0];
-    dragMove(t.clientX);
+  slider.addEventListener("touchmove", e => {
+    dragMove(e.touches[0].clientX);
   }, { passive: true });
 
   slider.addEventListener("touchend", endDrag, { passive: true });
