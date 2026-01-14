@@ -1,3 +1,11 @@
+/* =============================
+   C-LUXURY — FINAL style.css (COPY/PASTE)
+   Fixes:
+   - Header no longer covers hero (adds hero top padding)
+   - Hero images framed more cinematic (center 20%)
+   - Wishlist cards bigger + cinematic on mobile + desktop
+   ============================= */
+
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --black:#000;
@@ -99,21 +107,31 @@ body{
 .cart-action-btn.ghost{color:var(--white);border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.04);backdrop-filter:blur(10px)}
 .cart-action-btn.solid{color:var(--white);border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.10);backdrop-filter:blur(10px)}
 
-/* HERO */
-.hero{height:100vh;position:relative;overflow:hidden;background:#000}
+/* HERO
+   ✅ Fix 1: header overlap — add top padding equal to header height
+*/
+.hero{
+  height:100vh;
+  position:relative;
+  overflow:hidden;
+  background:#000;
+  padding-top:64px; /* ✅ header height */
+}
+
+/* ✅ Fix 2: cinematic framing (show more upper body/head) */
 .hero-slide{
   position:absolute;
   inset:0;
-  background-size: cover;          /* ✅ fills the hero */
+  background-size:cover;
   background-repeat:no-repeat;
-  background-position: center;     /* or center 20% */
+  background-position:center 20%; /* ✅ cinematic framing */
   opacity:0;
-  transition: opacity 1s ease;
+  transition:opacity 1s ease;
   filter:brightness(.60) contrast(1.05) saturate(1.04);
   transform:scale(1.02);
 }
+.hero-slide.active{opacity:1}
 
-.hero-slide.active{ opacity:1; }
 .hero::before{
   content:"";position:absolute;inset:0;
   background:
@@ -129,12 +147,21 @@ body{
     repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0px, rgba(255,255,255,.02) 1px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 6px);
   opacity:.12;transform:rotate(-8deg);z-index:2;pointer-events:none;mix-blend-mode:overlay;
 }
-.hero-content{position:absolute;left:18px;right:18px;bottom:78px;z-index:3;color:var(--white)}
+
+/* Place text safely above bottom, and inside padded hero */
+.hero-content{
+  position:absolute;
+  left:18px; right:18px;
+  bottom:78px;
+  z-index:3;
+  color:var(--white);
+}
 .hero-content h1{
   font-size:22px;line-height:1.25;letter-spacing:1px;font-weight:600;
   opacity:.98;transition:opacity .6s ease, transform .6s ease;
 }
 .hero-content h1.fadeout{opacity:0;transform:translateY(8px)}
+
 .rings{display:flex;gap:10px;margin:14px 0 10px}
 .ring{
   width:12px;height:12px;border-radius:50%;
@@ -142,6 +169,7 @@ body{
 }
 .ring.is-active{border-color:rgba(255,255,255,1)}
 .ring.is-active::after{content:"";position:absolute;inset:2px;border-radius:50%;background:rgba(255,255,255,.22)}
+
 .shop-btn{
   display:inline-flex;align-items:center;justify-content:center;
   padding:12px 22px;border-radius:999px;color:var(--white);text-decoration:none;
@@ -159,7 +187,7 @@ body{
   overflow:hidden;
   border-radius:var(--radius);
   user-select:none;
-  touch-action: pan-x;
+  touch-action:pan-x;
 }
 .wishlist-track{
   display:flex;
@@ -167,25 +195,22 @@ body{
   padding:2px 0;
   will-change:transform;
 }
-.wishlist-track .card{
-  flex:0 0 auto;
-}
+.wishlist-track .card{flex:0 0 auto}
 
+/* ✅ Fix 3: WISHLIST bigger cinematic */
 .card{
-  min-width:220px;
-  height:110px;
+  min-width:320px;
+  height:180px;
   border-radius:var(--radius);
   background:#0f0f0f;
   position:relative;
   overflow:hidden;
 }
-
-/* Wishlist card images */
 .card img{
   width:100%;
   height:100%;
-  object-fit:contain;
-  padding:8px;
+  object-fit:cover;
+  padding:0;
   background:#0f0f0f;
 }
 .card::after{
@@ -235,9 +260,8 @@ body{
   opacity:0;pointer-events:none;transition:opacity .35s ease;
 }
 .product.is-open .overlay,
-.product:hover .overlay{
-  opacity:1;pointer-events:auto;
-}
+.product:hover .overlay{opacity:1;pointer-events:auto}
+
 .overlay a,.overlay button{
   width:75%;padding:12px 12px;border-radius:999px;
   border:1px solid rgba(255,255,255,.20);
@@ -253,26 +277,4 @@ body{
 .checker{
   width:34px;height:18px;border-radius:6px;
   background:
-    linear-gradient(45deg,#000 25%,transparent 25%) -6px 0/12px 12px,
-    linear-gradient(-45deg,#000 25%,transparent 25%) -6px 0/12px 12px,
-    linear-gradient(45deg,transparent 75%,#000 75%) -6px 0/12px 12px,
-    linear-gradient(-45deg,transparent 75%,#000 75%) -6px 0/12px 12px;
-  opacity:.85;
-}
-
-/* DESKTOP SCALING */
-@media (min-width: 900px){
-  .header{height:74px;padding:0 28px}
-  .logo-spray{font-size:20px;letter-spacing:3px}
-  .icon-svg{width:22px;height:22px}
-
-  .hero-content{left:64px;right:auto;bottom:90px;max-width:560px}
-  .hero-content h1{font-size:34px;letter-spacing:1.5px}
-
-  .section-pad{padding:34px 64px}
-  .section-title{font-size:15px}
-
-  .card{min-width:260px;height:130px}
-  .product{min-width:300px}
-  .product img,.product.placeholder .ph-img{height:360px}
-}
+    linear-gradient(45deg,#000 25%,transparent 25%) -6px 0/12
