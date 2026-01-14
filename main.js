@@ -1,9 +1,10 @@
 /* =============================
-   C-LUXURY — v3 JS (FINAL FIX)
-   Fixes only:
-   - Prevent script crashing if elements missing
-   - Rings tap works reliably
-   - Wishlist swipe works on iPhone (touch + pointer + inertia)
+   C-LUXURY — FINAL main.js (COPY/PASTE)
+   Matches your latest CSS:
+   - Header fixed (CSS handles spacing)
+   - Hero slider autoplay + dots + text change
+   - Add to cart works
+   - Wishlist is NATIVE scroll (NO wishlist JS)
    ============================= */
 
 const SHOPIFY = {
@@ -28,31 +29,41 @@ const heroText = document.getElementById("heroText");
 const ringsWrap = document.getElementById("rings");
 const slides = Array.from(document.querySelectorAll(".hero-slide"));
 
-// ===== Menu
-function openMenu(){
+// =============================
+// MENU
+// =============================
+function openMenu() {
   if (!menu || !backdrop) return;
   menu.setAttribute("aria-hidden", "false");
   backdrop.hidden = false;
 }
-function closeMenuFn(){
+function closeMenuFn() {
   if (!menu) return;
   menu.setAttribute("aria-hidden", "true");
-  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")) backdrop.hidden = true;
+  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")) {
+    backdrop.hidden = true;
+  }
 }
 if (menuBtn) menuBtn.addEventListener("click", openMenu);
 if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
 
-// ===== Cart
-function openCart(){
+// =============================
+// CART
+// =============================
+function openCart() {
   if (!cartDrawer || !backdrop) return;
   cartDrawer.setAttribute("aria-hidden", "false");
   backdrop.hidden = false;
+
+  // refresh iframe so it shows latest cart state
   if (cartFrame) cartFrame.src = SHOPIFY.cartUrl + "?t=" + Date.now();
 }
-function closeCart(){
+function closeCart() {
   if (!cartDrawer) return;
   cartDrawer.setAttribute("aria-hidden", "true");
-  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false")) backdrop.hidden = true;
+  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false")) {
+    backdrop.hidden = true;
+  }
 }
 if (cartBtn) cartBtn.addEventListener("click", openCart);
 if (cartClose) cartClose.addEventListener("click", closeCart);
@@ -71,7 +82,9 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-// ===== Hero slider + rings
+// =============================
+// HERO SLIDER + DOTS
+// =============================
 const texts = [
   "A NEW YEAR<br>WITH PRESENCE",
   "SILENCE<br>CONNOTES NOISE",
@@ -85,65 +98,88 @@ const INTERVAL = 4300;
 let index = 0;
 let timer = null;
 
-function buildRings(){
+function buildRings() {
   if (!ringsWrap || !slides.length) return;
+
   ringsWrap.innerHTML = "";
   slides.forEach((_, i) => {
     const b = document.createElement("button");
     b.className = "ring" + (i === 0 ? " is-active" : "");
     b.type = "button";
-    b.setAttribute("aria-label", `Go to slide ${i+1}`);
+    b.setAttribute("aria-label", `Go to slide ${i + 1}`);
     b.addEventListener("click", () => goToSlide(i, true));
     ringsWrap.appendChild(b);
   });
 }
-function setActiveRing(i){
+
+function setActiveRing(i) {
   if (!ringsWrap) return;
   const all = ringsWrap.querySelectorAll(".ring");
   all.forEach(r => r.classList.remove("is-active"));
   if (all[i]) all[i].classList.add("is-active");
 }
-function goToSlide(i, resetTimer = false){
+
+function goToSlide(i, resetTimer = false) {
   if (!slides.length) return;
+
+  // clamp
+  i = ((i % slides.length) + slides.length) % slides.length;
 
   if (heroText) heroText.classList.add("fadeout");
 
   setTimeout(() => {
     slides.forEach(s => s.classList.remove("active"));
     slides[i].classList.add("active");
+
     if (heroText) {
       heroText.innerHTML = texts[i] || "";
       heroText.classList.remove("fadeout");
     }
+
     setActiveRing(i);
     index = i;
   }, 220);
 
   if (resetTimer) restartTimer();
 }
-function nextSlide(){
+
+function nextSlide() {
   goToSlide((index + 1) % slides.length, false);
 }
-function restartTimer(){
+
+function restartTimer() {
   if (timer) clearInterval(timer);
   timer = setInterval(nextSlide, INTERVAL);
 }
-buildRings();
-restartTimer();
 
-// ===== Product overlay tap + add to cart
+if (slides.length) {
+  buildRings();
+  restartTimer();
+}
+
+// =============================
+// PRODUCT OVERLAY TAP
+// =============================
 const products = Array.from(document.querySelectorAll(".product"));
+
 products.forEach(p => {
   p.addEventListener("click", (e) => {
     const el = e.target;
-    if (el.closest("a") || el.closest("button.addToCart") || el.classList.contains("buy-chip")) return;
+
+    // do not toggle overlay if clicking buttons/links
+    if (
+      el.closest("a") ||
+      el.closest("button.addToCart") ||
+      el.classList.contains("buy-chip")
+    ) return;
+
     const isOpen = p.classList.contains("is-open");
     products.forEach(x => x.classList.remove("is-open"));
     if (!isOpen) p.classList.add("is-open");
   });
 
   const chip = p.querySelector(".buy-chip");
-  if (chip){
+  if (chip) {
     chip.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -152,11 +188,16 @@ products.forEach(p => {
     });
   }
 });
+
+// click outside closes overlays
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".product")) products.forEach(x => x.classList.remove("is-open"));
 });
 
-function addToCartViaIframe(variantId){
+// =============================
+// ADD TO CART (Shopify via hidden iframe)
+// =============================
+function addToCartViaIframe(variantId) {
   return new Promise((resolve) => {
     const iframe = document.createElement("iframe");
     iframe.style.width = "0";
@@ -164,6 +205,7 @@ function addToCartViaIframe(variantId){
     iframe.style.border = "0";
     iframe.style.position = "absolute";
     iframe.style.left = "-9999px";
+
     iframe.src = SHOPIFY.cartAddPermalink(variantId, 1);
 
     iframe.onload = () => {
@@ -172,6 +214,7 @@ function addToCartViaIframe(variantId){
         resolve();
       }, 400);
     };
+
     document.body.appendChild(iframe);
   });
 }
@@ -188,122 +231,29 @@ document.querySelectorAll(".addToCart").forEach(btn => {
     btn.textContent = "ADDING…";
     btn.disabled = true;
 
-    await addToCartViaIframe(variantId);
+    try {
+      await addToCartViaIframe(variantId);
 
-    btn.textContent = "ADDED";
-    setTimeout(() => {
-      btn.textContent = original;
-      btn.disabled = false;
-    }, 900);
+      btn.textContent = "ADDED";
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.disabled = false;
+      }, 900);
 
-    openCart();
+      openCart();
+    } catch {
+      btn.textContent = "ERROR";
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.disabled = false;
+      }, 900);
+    }
   });
 });
 
-// =====================================================
-// WISHLIST — TRUE SWIPE/DRAG + INFINITE + INERTIA
-// =====================================================
-const slider = document.getElementById("wishlistSlider");
-const track  = document.getElementById("wishlistTrack");
-
-if (slider && track) {
-  const originals = Array.from(track.children);
-
-  // ✅ If not enough cards, just do nothing (NO return)
-  if (originals.length >= 2) {
-
-    const cloneBefore = originals.map(n => n.cloneNode(true));
-    const cloneAfter  = originals.map(n => n.cloneNode(true));
-
-    cloneBefore.forEach(n => track.insertBefore(n, track.firstChild));
-    cloneAfter.forEach(n => track.appendChild(n));
-
-    function setWidth(){
-      return originals.reduce((sum, el) => sum + el.getBoundingClientRect().width, 0)
-        + (14 * (originals.length - 1));
-    }
-
-    let x = 0;
-    let isDown = false;
-    let startX = 0;
-    let startTranslate = 0;
-    let lastMoveTime = 0;
-    let lastMoveX = 0;
-    let velocity = 0;
-    let raf = null;
-
-    function apply(){ track.style.transform = `translate3d(${x}px,0,0)`; }
-
-    function centerToMiddle(){
-      const w = setWidth();
-      x = -w;
-      apply();
-    }
-
-    function normalize(){
-      const w = setWidth();
-      if (x > 0) x -= w;
-      if (x < -2 * w) x += w;
-    }
-
-    function stopInertia(){
-      if (raf) cancelAnimationFrame(raf);
-      raf = null;
-    }
-
-    function inertiaStep(){
-      velocity *= 0.92;
-      x += velocity;
-      normalize();
-      apply();
-      if (Math.abs(velocity) > 0.2) raf = requestAnimationFrame(inertiaStep);
-    }
-
-    function startDrag(clientX){
-      isDown = true;
-      stopInertia();
-      startX = clientX;
-      startTranslate = x;
-      velocity = 0;
-      lastMoveTime = performance.now();
-      lastMoveX = clientX;
-    }
-
-    function dragMove(clientX){
-      if (!isDown) return;
-      const dx = clientX - startX;
-      x = startTranslate + dx;
-      normalize();
-      apply();
-
-      const now = performance.now();
-      const dt = Math.max(16, now - lastMoveTime);
-      velocity = ((clientX - lastMoveX) / dt) * 18;
-
-      lastMoveTime = now;
-      lastMoveX = clientX;
-    }
-
-    function endDrag(){
-      if (!isDown) return;
-      isDown = false;
-      if (Math.abs(velocity) > 0.2) raf = requestAnimationFrame(inertiaStep);
-    }
-
-    slider.addEventListener("pointerdown", (e) => {
-      slider.setPointerCapture(e.pointerId);
-      startDrag(e.clientX);
-    });
-    slider.addEventListener("pointermove", (e) => dragMove(e.clientX));
-    slider.addEventListener("pointerup", endDrag);
-    slider.addEventListener("pointercancel", endDrag);
-
-    slider.addEventListener("touchstart", (e) => startDrag(e.touches[0].clientX), { passive:true });
-    slider.addEventListener("touchmove", (e) => dragMove(e.touches[0].clientX), { passive:true });
-    slider.addEventListener("touchend", endDrag, { passive:true });
-    slider.addEventListener("touchcancel", endDrag, { passive:true });
-
-    window.addEventListener("resize", centerToMiddle);
-    centerToMiddle();
-  }
-}
+/* =====================================================
+   WISHLIST NOTE:
+   Your wishlist is now native scroll via CSS:
+   .wishlist-slider { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+   So we intentionally do NOT run wishlist JS here.
+   ===================================================== */
