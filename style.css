@@ -163,7 +163,6 @@ body{
 }
 .wishlist-track .card{
   flex:0 0 auto;
-  
 }
 
 .card{
@@ -171,10 +170,8 @@ body{
   height:110px;
   border-radius:var(--radius);
   background:#0f0f0f;
-  color:var(--white);
-  display:flex;align-items:center;justify-content:center;
-  letter-spacing:2px;font-size:12px;
-  position:relative;overflow:hidden;
+  position:relative;
+  overflow:hidden;
 }
 
 /* Wishlist card images */
