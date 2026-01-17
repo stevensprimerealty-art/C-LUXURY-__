@@ -359,3 +359,10 @@ body{
   opacity: 1;
   pointer-events: auto;
 }
+
+/* ✅ While swiping mini slider, NEVER show overlay options */
+.product.is-swiping .overlay{
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+
