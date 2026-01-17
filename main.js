@@ -3,7 +3,7 @@
    RULES YOU WANTED:
    - Mini slider: swipe only (no options while swiping)
    - Product options open ONLY when tapping BUY NOW chip
-   - Options are BELOW the card (card-actions)
+   - Options are BELOW the card (.actions-panel)
    - No arrivals auto-scroll
    ============================= */
 
@@ -41,7 +41,10 @@ function openMenu() {
 function closeMenuFn() {
   if (!menu) return;
   menu.setAttribute("aria-hidden", "true");
-  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")) {
+  if (
+    backdrop &&
+    (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")
+  ) {
     backdrop.hidden = true;
   }
 }
@@ -69,17 +72,18 @@ if (backdrop) {
   backdrop.addEventListener("click", () => {
     closeMenuFn();
     closeCart();
+    closeAllActions();
   });
 }
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeMenuFn();
     closeCart();
-    document.querySelectorAll(".product.is-open").forEach((x) => x.classList.remove("is-open"));
+    closeAllActions();
   }
 });
 
-// ===== Hero slider + rings (keep this)
+// ===== Hero slider + rings (keep)
 const texts = [
   "A NEW YEAR<br>WITH PRESENCE",
   "SILENCE<br>CONNOTES NOISE",
@@ -170,12 +174,12 @@ function getActiveVariantAndUrl(card) {
 function syncActionLinks(card) {
   const { url } = getActiveVariantAndUrl(card);
 
-  // Buy Now button in card-actions must go to active url
-  const buyNow = card.querySelector(".card-actions a.buyNow");
+  // ✅ matches your HTML container (.actions-panel)
+  const buyNow = card.querySelector(".actions-panel a.buyNow");
   if (buyNow) buyNow.href = url && url !== "#" ? url : "#";
 }
 
-// ===== Product actions open ONLY on BUY NOW CHIP
+// ===== Product actions open ONLY on BUY NOW chip
 const products = Array.from(document.querySelectorAll(".product"));
 
 function closeAllActions() {
@@ -189,9 +193,6 @@ function openActions(card) {
 }
 
 products.forEach((p) => {
-  // ✅ DO NOT open options on tapping image/card anymore
-  // So we do NOT attach "click anywhere opens overlay"
-
   // ✅ Only BUY NOW chip opens options
   const chip = p.querySelector(".buy-chip");
   if (chip) {
@@ -200,6 +201,12 @@ products.forEach((p) => {
       e.stopPropagation();
       openActions(p);
     });
+  }
+
+  // ✅ Stop clicks inside actions panel from closing
+  const panel = p.querySelector(".actions-panel");
+  if (panel) {
+    panel.addEventListener("click", (e) => e.stopPropagation());
   }
 });
 
@@ -237,7 +244,7 @@ document.querySelectorAll(".addToCart").forEach((btn) => {
 });
 
 // ===== Swift Buy (ACTIVE variant -> checkout, SAME TAB)
-document.querySelectorAll("a.swift").forEach((a) => {
+document.querySelectorAll(".actions-panel a.swift").forEach((a) => {
   a.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -258,8 +265,8 @@ document.querySelectorAll("a.swift").forEach((a) => {
   });
 });
 
-// ===== Keep buyNow clicks normal (just stop closing)
-document.querySelectorAll("a.buyNow").forEach((a) => {
+// ===== Buy Now click normal (don’t close instantly)
+document.querySelectorAll(".actions-panel a.buyNow").forEach((a) => {
   a.addEventListener("click", (e) => {
     e.stopPropagation();
   });
@@ -290,7 +297,7 @@ function setMiniActive(card, newIndex) {
 
   card.dataset.miniIndex = String(idx);
 
-  // keep card-actions Buy Now synced to active product
+  // keep actions Buy Now synced
   syncActionLinks(card);
 }
 
@@ -299,7 +306,10 @@ function initMiniSliders() {
 
   cards.forEach((card) => {
     const imgs = Array.from(card.querySelectorAll(".mini-media img"));
-    const startIdx = Math.max(0, imgs.findIndex((i) => i.classList.contains("is-active")));
+    const startIdx = Math.max(
+      0,
+      imgs.findIndex((i) => i.classList.contains("is-active"))
+    );
     setMiniActive(card, startIdx);
 
     const media = card.querySelector(".mini-media");
@@ -311,47 +321,62 @@ function initMiniSliders() {
     let dx = 0;
     let tracking = false;
 
-    media.addEventListener("touchstart", (e) => {
-      if (!e.touches || !e.touches[0]) return;
+    media.addEventListener(
+      "touchstart",
+      (e) => {
+        if (!e.touches || !e.touches[0]) return;
 
-      // ✅ while swiping, close actions (so nothing shows)
-      card.classList.remove("is-open");
+        // ✅ while swiping, close options
+        card.classList.remove("is-open");
 
-      tracking = true;
-      startX = e.touches[0].clientX;
-      dx = 0;
-    }, { passive: true });
+        tracking = true;
+        startX = e.touches[0].clientX;
+        dx = 0;
+      },
+      { passive: true }
+    );
 
-    media.addEventListener("touchmove", (e) => {
-      if (!tracking || !e.touches || !e.touches[0]) return;
-      dx = e.touches[0].clientX - startX;
+    media.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!tracking || !e.touches || !e.touches[0]) return;
+        dx = e.touches[0].clientX - startX;
 
-      if (Math.abs(dx) > 12) {
-        e.preventDefault(); // stop page scroll on horizontal swipe
-      }
-    }, { passive: false });
+        if (Math.abs(dx) > 12) {
+          e.preventDefault(); // stop vertical scroll when horizontal swipe
+        }
+      },
+      { passive: false }
+    );
 
-    media.addEventListener("touchend", () => {
-      if (!tracking) return;
-      tracking = false;
+    media.addEventListener(
+      "touchend",
+      () => {
+        if (!tracking) return;
+        tracking = false;
 
-      // swipe changes image
-      if (Math.abs(dx) >= 35) {
-        const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
-        if (dx < 0) setMiniActive(card, cur + 1);
-        else setMiniActive(card, cur - 1);
-      }
+        if (Math.abs(dx) >= 35) {
+          const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
+          if (dx < 0) setMiniActive(card, cur + 1);
+          else setMiniActive(card, cur - 1);
+        }
 
-      // ✅ tap does NOTHING (no open)
-    }, { passive: true });
+        // ✅ tap does NOTHING
+      },
+      { passive: true }
+    );
 
-    media.addEventListener("touchcancel", () => {
-      tracking = false;
-      dx = 0;
-    }, { passive: true });
+    media.addEventListener(
+      "touchcancel",
+      () => {
+        tracking = false;
+        dx = 0;
+      },
+      { passive: true }
+    );
   });
 }
 
 initMiniSliders();
 
-/* ✅ Arrivals auto-scroll REMOVED بالكامل (nothing here) */
+/* ✅ Arrivals auto-scroll REMOVED بالكامل */
