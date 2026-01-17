@@ -337,12 +337,12 @@ function initMiniSliders() {
     }, { passive: true });
 
     media.addEventListener("touchmove", (e) => {
-      if (!tracking || !e.touches || !e.touches[0]) return;
-      dx = e.touches[0].clientX - startX;
-      if (Math.abs(dx) > 8) moved = true;
-      e.preventDefault();
-    }, { passive: false });
-
+  if (!tracking || !e.touches || !e.touches[0]) return;
+  dx = e.touches[0].clientX - startX;
+  if (Math.abs(dx) > 12) moved = true; // 👈 THIS LINE
+  e.preventDefault();
+}, { passive: false });
+     
     media.addEventListener("touchend", () => {
       if (!tracking) return;
       tracking = false;
@@ -363,9 +363,10 @@ function initMiniSliders() {
     }, { passive: true });
 
     media.addEventListener("touchcancel", () => {
-      tracking = false;
-      dx = 0;
-    }, { passive: true });
+  tracking = false;
+  dx = 0;
+  moved = false;
+}, { passive: true });
   });
 }
 
