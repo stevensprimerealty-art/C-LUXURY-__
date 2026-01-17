@@ -329,6 +329,10 @@ body{
   height: 290px;              /* match your product image height */
   border-radius: var(--radius);
   overflow: hidden;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .arrivals-card .mini-media img{
@@ -349,22 +353,3 @@ body{
   opacity: 1;
   pointer-events: auto;
 }
-
-/* arrows */
-.arrivals-card .mini-nav{
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.25);
-  background: rgba(0,0,0,.35);
-  color: #fff;
-  backdrop-filter: blur(10px);
-  z-index: 5;
-}
-
-.arrivals-card .mini-nav.prev{ left: 10px; }
-.arrivals-card .mini-nav.next{ right: 10px; }
-
