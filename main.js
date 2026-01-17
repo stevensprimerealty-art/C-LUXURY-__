@@ -4,13 +4,16 @@
    - Hero slider + rings stable
    - Product overlay + add-to-cart stable
    - Wishlist uses NATIVE scroll (CSS handles smooth touch)
+   - C-NEW ARRIVALS: main auto-scroll (4.5s) + mini slider (tap/swipe + fade)
    ============================= */
 
 const SHOPIFY = {
   domain: "https://mrcharliestxs.myshopify.com",
   cartUrl: "https://mrcharliestxs.myshopify.com/cart",
   cartAddPermalink: (variantId, qty = 1) =>
-    `https://mrcharliestxs.myshopify.com/cart/add?id=${encodeURIComponent(variantId)}&quantity=${encodeURIComponent(qty)}`
+    `https://mrcharliestxs.myshopify.com/cart/add?id=${encodeURIComponent(
+      variantId
+    )}&quantity=${encodeURIComponent(qty)}`
 };
 
 // ===== Elements
@@ -29,30 +32,35 @@ const ringsWrap = document.getElementById("rings");
 const slides = Array.from(document.querySelectorAll(".hero-slide"));
 
 // ===== Menu
-function openMenu(){
+function openMenu() {
   if (!menu || !backdrop) return;
   menu.setAttribute("aria-hidden", "false");
   backdrop.hidden = false;
 }
-function closeMenuFn(){
+function closeMenuFn() {
   if (!menu) return;
   menu.setAttribute("aria-hidden", "true");
-  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")) backdrop.hidden = true;
+  if (
+    backdrop &&
+    (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")
+  )
+    backdrop.hidden = true;
 }
 if (menuBtn) menuBtn.addEventListener("click", openMenu);
 if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
 
 // ===== Cart
-function openCart(){
+function openCart() {
   if (!cartDrawer || !backdrop) return;
   cartDrawer.setAttribute("aria-hidden", "false");
   backdrop.hidden = false;
   if (cartFrame) cartFrame.src = SHOPIFY.cartUrl + "?t=" + Date.now();
 }
-function closeCart(){
+function closeCart() {
   if (!cartDrawer) return;
   cartDrawer.setAttribute("aria-hidden", "true");
-  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false")) backdrop.hidden = true;
+  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false"))
+    backdrop.hidden = true;
 }
 if (cartBtn) cartBtn.addEventListener("click", openCart);
 if (cartClose) cartClose.addEventListener("click", closeCart);
@@ -84,31 +92,31 @@ const INTERVAL = 4300;
 let index = 0;
 let timer = null;
 
-function buildRings(){
+function buildRings() {
   if (!ringsWrap || !slides.length) return;
   ringsWrap.innerHTML = "";
   slides.forEach((_, i) => {
     const b = document.createElement("button");
     b.className = "ring" + (i === 0 ? " is-active" : "");
     b.type = "button";
-    b.setAttribute("aria-label", `Go to slide ${i+1}`);
+    b.setAttribute("aria-label", `Go to slide ${i + 1}`);
     b.addEventListener("click", () => goToSlide(i, true));
     ringsWrap.appendChild(b);
   });
 }
-function setActiveRing(i){
+function setActiveRing(i) {
   if (!ringsWrap) return;
   const all = ringsWrap.querySelectorAll(".ring");
-  all.forEach(r => r.classList.remove("is-active"));
+  all.forEach((r) => r.classList.remove("is-active"));
   if (all[i]) all[i].classList.add("is-active");
 }
-function goToSlide(i, resetTimer = false){
+function goToSlide(i, resetTimer = false) {
   if (!slides.length) return;
 
   if (heroText) heroText.classList.add("fadeout");
 
   setTimeout(() => {
-    slides.forEach(s => s.classList.remove("active"));
+    slides.forEach((s) => s.classList.remove("active"));
     slides[i].classList.add("active");
     if (heroText) {
       heroText.innerHTML = texts[i] || "";
@@ -120,10 +128,10 @@ function goToSlide(i, resetTimer = false){
 
   if (resetTimer) restartTimer();
 }
-function nextSlide(){
+function nextSlide() {
   goToSlide((index + 1) % slides.length, false);
 }
-function restartTimer(){
+function restartTimer() {
   if (timer) clearInterval(timer);
   timer = setInterval(nextSlide, INTERVAL);
 }
@@ -133,30 +141,40 @@ restartTimer();
 
 // ===== Product overlay tap + add to cart
 const products = Array.from(document.querySelectorAll(".product"));
-products.forEach(p => {
+products.forEach((p) => {
   p.addEventListener("click", (e) => {
     const el = e.target;
-    if (el.closest("a") || el.closest("button.addToCart") || el.classList.contains("buy-chip")) return;
+
+    // IMPORTANT: don't toggle overlay when clicking mini-nav arrows
+    if (
+      el.closest("a") ||
+      el.closest("button.addToCart") ||
+      el.classList.contains("buy-chip") ||
+      el.closest(".mini-nav")
+    )
+      return;
+
     const isOpen = p.classList.contains("is-open");
-    products.forEach(x => x.classList.remove("is-open"));
+    products.forEach((x) => x.classList.remove("is-open"));
     if (!isOpen) p.classList.add("is-open");
   });
 
   const chip = p.querySelector(".buy-chip");
-  if (chip){
+  if (chip) {
     chip.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      products.forEach(x => x.classList.remove("is-open"));
+      products.forEach((x) => x.classList.remove("is-open"));
       p.classList.add("is-open");
     });
   }
 });
 document.addEventListener("click", (e) => {
-  if (!e.target.closest(".product")) products.forEach(x => x.classList.remove("is-open"));
+  if (!e.target.closest(".product"))
+    products.forEach((x) => x.classList.remove("is-open"));
 });
 
-function addToCartViaIframe(variantId){
+function addToCartViaIframe(variantId) {
   return new Promise((resolve) => {
     const iframe = document.createElement("iframe");
     iframe.style.width = "0";
@@ -176,7 +194,7 @@ function addToCartViaIframe(variantId){
   });
 }
 
-document.querySelectorAll(".addToCart").forEach(btn => {
+document.querySelectorAll(".addToCart").forEach((btn) => {
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -202,3 +220,162 @@ document.querySelectorAll(".addToCart").forEach(btn => {
 
 // ✅ Wishlist: NO JS drag / NO transform / NO cloning
 // CSS handles native smooth horizontal scroll on iPhone.
+
+/* ================= MAIN ARRIVALS AUTO SCROLL (every 4.5s) ================= */
+const arrivalsCarousel = document.getElementById("arrivalsCarousel");
+
+if (arrivalsCarousel) {
+  let autoScrollTimer = null;
+  const AUTO_SCROLL_DELAY = 4500;
+
+  function stopAutoScroll() {
+    if (autoScrollTimer) clearInterval(autoScrollTimer);
+    autoScrollTimer = null;
+  }
+
+  function startAutoScroll() {
+    stopAutoScroll();
+    autoScrollTimer = setInterval(() => {
+      const maxScroll =
+        arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
+
+      if (arrivalsCarousel.scrollLeft >= maxScroll - 5) {
+        arrivalsCarousel.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        arrivalsCarousel.scrollBy({
+          left: Math.max(280, arrivalsCarousel.clientWidth * 0.9),
+          behavior: "smooth"
+        });
+      }
+    }, AUTO_SCROLL_DELAY);
+  }
+
+  ["touchstart", "mousedown", "wheel", "pointerdown"].forEach((evt) => {
+    arrivalsCarousel.addEventListener(evt, stopAutoScroll, { passive: true });
+  });
+
+  ["touchend", "mouseup", "pointerup"].forEach((evt) => {
+    arrivalsCarousel.addEventListener(
+      evt,
+      () => setTimeout(startAutoScroll, 1200),
+      { passive: true }
+    );
+  });
+
+  startAutoScroll();
+}
+
+/* ================= MINI SLIDER INSIDE EACH CARD (3 images) =================
+   - tap ‹ / ›
+   - swipe left/right
+   - fades to next image
+   - updates name/price + swift url + add-to-cart variant
+*/
+function setMiniActive(card, newIndex) {
+  const media = card.querySelector(".mini-media");
+  if (!media) return;
+
+  const imgs = Array.from(media.querySelectorAll("img"));
+  if (!imgs.length) return;
+
+  const count = imgs.length;
+  const idx = (newIndex + count) % count;
+
+  imgs.forEach((im) => im.classList.remove("is-active"));
+  imgs[idx].classList.add("is-active");
+
+  // Update meta + links from data- attributes
+  const active = imgs[idx];
+  const name = active.getAttribute("data-name") || "";
+  const price = active.getAttribute("data-price") || "";
+  const url = active.getAttribute("data-url") || "#";
+  const variant = active.getAttribute("data-variant") || "";
+
+  const nameEl = card.querySelector(".p-name");
+  const priceEl = card.querySelector(".p-price");
+  if (nameEl) nameEl.textContent = name.toUpperCase();
+  if (priceEl) priceEl.textContent = price;
+
+  const swift = card.querySelector("a.swift");
+  if (swift) swift.href = url;
+
+  const addBtn = card.querySelector("button.addToCart");
+  if (addBtn && variant) addBtn.setAttribute("data-variant", variant);
+
+  card.dataset.miniIndex = String(idx);
+}
+
+function initMiniSliders() {
+  const cards = Array.from(document.querySelectorAll(".arrivals-card"));
+  cards.forEach((card) => {
+    // init index = active img
+    const imgs = Array.from(card.querySelectorAll(".mini-media img"));
+    const startIdx = Math.max(
+      0,
+      imgs.findIndex((i) => i.classList.contains("is-active"))
+    );
+    setMiniActive(card, startIdx);
+
+    const prevBtn = card.querySelector(".mini-nav.prev");
+    const nextBtn = card.querySelector(".mini-nav.next");
+
+    const getIndex = () => parseInt(card.dataset.miniIndex || "0", 10) || 0;
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setMiniActive(card, getIndex() - 1);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setMiniActive(card, getIndex() + 1);
+      });
+    }
+
+    // Swipe support
+    const media = card.querySelector(".mini-media");
+    if (!media) return;
+
+    let startX = 0;
+    let dx = 0;
+    let tracking = false;
+
+    media.addEventListener(
+      "touchstart",
+      (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        tracking = true;
+        startX = e.touches[0].clientX;
+        dx = 0;
+      },
+      { passive: true }
+    );
+
+    media.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!tracking || !e.touches || !e.touches[0]) return;
+        dx = e.touches[0].clientX - startX;
+      },
+      { passive: true }
+    );
+
+    media.addEventListener(
+      "touchend",
+      () => {
+        if (!tracking) return;
+        tracking = false;
+        if (Math.abs(dx) < 35) return;
+        if (dx < 0) setMiniActive(card, getIndex() + 1);
+        else setMiniActive(card, getIndex() - 1);
+      },
+      { passive: true }
+    );
+  });
+}
+
+initMiniSliders();
