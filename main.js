@@ -1,11 +1,5 @@
 /* =============================
    C-LUXURY — FINAL main.js (COPY/PASTE)
-   FIXES:
-   - Mini slider swipe works on iPhone (prevents page scroll)
-   - Tap on product image opens ACTIVE product url
-   - Swift Buy goes to CHECKOUT (adds active variant first)
-   - Arrivals auto-scroll loops smoother
-   - NO arrows (swipe only)
    ============================= */
 
 const SHOPIFY = {
@@ -165,28 +159,47 @@ function getActiveVariantAndUrl(card) {
   return { variant, url };
 }
 
-// ===== Product overlay
+function syncOverlayLinks(card) {
+  const { url } = getActiveVariantAndUrl(card);
+  const buyNow = card.querySelector("a.buyNow");
+  if (buyNow) buyNow.href = url && url !== "#" ? url : "#";
+}
+
+// ===== Product overlay behavior
 const products = Array.from(document.querySelectorAll(".product"));
 
+function openOverlay(card) {
+  products.forEach((x) => x.classList.remove("is-open"));
+  card.classList.add("is-open");
+  syncOverlayLinks(card);
+}
+
 products.forEach((p) => {
+  // Tap anywhere on card (except buttons/links) opens overlay
   p.addEventListener("click", (e) => {
     const el = e.target;
-
-    // If clicking buttons/links, don't toggle
     if (el.closest("a") || el.closest("button")) return;
-
     const isOpen = p.classList.contains("is-open");
     products.forEach((x) => x.classList.remove("is-open"));
-    if (!isOpen) p.classList.add("is-open");
+    if (!isOpen) openOverlay(p);
   });
 
+  // BUY NOW chip opens overlay (not navigate)
   const chip = p.querySelector(".buy-chip");
   if (chip) {
     chip.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      products.forEach((x) => x.classList.remove("is-open"));
-      p.classList.add("is-open");
+      openOverlay(p);
+    });
+  }
+
+  // BuyNow link should go to ACTIVE product url
+  const buyNow = p.querySelector("a.buyNow");
+  if (buyNow) {
+    buyNow.addEventListener("click", (e) => {
+      e.stopPropagation();
+      // let href navigate normally (same tab)
     });
   }
 });
@@ -196,20 +209,23 @@ document.addEventListener("click", (e) => {
     products.forEach((x) => x.classList.remove("is-open"));
 });
 
-// ===== Add to cart
+// ===== Add to cart (ACTIVE variant)
 document.querySelectorAll(".addToCart").forEach((btn) => {
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const variantId = btn.getAttribute("data-variant");
-    if (!variantId) return;
+    const card = btn.closest(".arrivals-card");
+    if (!card) return;
+
+    const { variant } = getActiveVariantAndUrl(card);
+    if (!variant) return;
 
     const original = btn.textContent;
     btn.textContent = "ADDING…";
     btn.disabled = true;
 
-    await addToCartViaIframe(variantId);
+    await addToCartViaIframe(variant);
 
     btn.textContent = "ADDED";
     setTimeout(() => {
@@ -221,7 +237,7 @@ document.querySelectorAll(".addToCart").forEach((btn) => {
   });
 });
 
-// ===== Swift Buy (checkout)
+// ===== Swift Buy (ACTIVE variant -> checkout, SAME TAB)
 document.querySelectorAll("a.swift").forEach((a) => {
   a.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -231,16 +247,21 @@ document.querySelectorAll("a.swift").forEach((a) => {
     if (!card) return;
 
     const { variant } = getActiveVariantAndUrl(card);
+    if (!variant) return;
 
+    const original = a.textContent;
     a.textContent = "LOADING…";
-    if (variant) await addToCartViaIframe(variant);
-    a.textContent = "SWIFT BUY";
 
-    window.open(SHOPIFY.checkoutUrl, "_blank");
+    await addToCartViaIframe(variant);
+
+    a.textContent = original;
+
+    // same tab is smoother on iPhone
+    window.location.href = SHOPIFY.checkoutUrl;
   });
 });
 
-// ================= MAIN ARRIVALS AUTO SCROLL =================
+// ================= ARRIVALS AUTO SCROLL =================
 const arrivalsCarousel = document.getElementById("arrivalsCarousel");
 
 if (arrivalsCarousel) {
@@ -258,7 +279,13 @@ if (arrivalsCarousel) {
       const maxScroll = arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
 
       if (arrivalsCarousel.scrollLeft >= maxScroll - 10) {
-        arrivalsCarousel.scrollTo({ left: 0, behavior: "smooth" });
+        // Clean reset (no weird loop jump)
+        arrivalsCarousel.style.scrollBehavior = "auto";
+        arrivalsCarousel.scrollLeft = 0;
+        // restore smooth after reset
+        requestAnimationFrame(() => {
+          arrivalsCarousel.style.scrollBehavior = "smooth";
+        });
       } else {
         arrivalsCarousel.scrollBy({
           left: Math.max(280, arrivalsCarousel.clientWidth * 0.9),
@@ -296,17 +323,16 @@ function setMiniActive(card, newIndex) {
   const active = imgs[idx];
   const name = active.getAttribute("data-name") || "";
   const price = active.getAttribute("data-price") || "";
-  const variant = active.getAttribute("data-variant") || "";
 
   const nameEl = card.querySelector(".p-name");
   const priceEl = card.querySelector(".p-price");
   if (nameEl) nameEl.textContent = name.toUpperCase();
   if (priceEl) priceEl.textContent = price;
 
-  const addBtn = card.querySelector("button.addToCart");
-  if (addBtn && variant) addBtn.setAttribute("data-variant", variant);
-
   card.dataset.miniIndex = String(idx);
+
+  // keep overlay buyNow synced to active product
+  syncOverlayLinks(card);
 }
 
 function initMiniSliders() {
@@ -320,7 +346,7 @@ function initMiniSliders() {
     const media = card.querySelector(".mini-media");
     if (!media) return;
 
-    // iPhone swipe fix
+    // Let vertical scroll work, we handle horizontal
     media.style.touchAction = "pan-y";
 
     let startX = 0;
@@ -337,17 +363,21 @@ function initMiniSliders() {
     }, { passive: true });
 
     media.addEventListener("touchmove", (e) => {
-  if (!tracking || !e.touches || !e.touches[0]) return;
-  dx = e.touches[0].clientX - startX;
-  if (Math.abs(dx) > 12) moved = true; // 👈 THIS LINE
-  e.preventDefault();
-}, { passive: false });
-     
+      if (!tracking || !e.touches || !e.touches[0]) return;
+      dx = e.touches[0].clientX - startX;
+
+      // if user is swiping horizontally, stop page from scrolling
+      if (Math.abs(dx) > 12) {
+        moved = true;
+        e.preventDefault();
+      }
+    }, { passive: false });
+
     media.addEventListener("touchend", () => {
       if (!tracking) return;
       tracking = false;
 
-      // swipe
+      // swipe changes mini image
       if (Math.abs(dx) >= 35) {
         const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
         if (dx < 0) setMiniActive(card, cur + 1);
@@ -355,18 +385,15 @@ function initMiniSliders() {
         return;
       }
 
-      // tap (open active product link)
-      if (!moved) {
-        const { url } = getActiveVariantAndUrl(card);
-        if (url && url !== "#") window.open(url, "_blank");
-      }
+      // tap image opens overlay options (NOT product page)
+      if (!moved) openOverlay(card);
     }, { passive: true });
 
     media.addEventListener("touchcancel", () => {
-  tracking = false;
-  dx = 0;
-  moved = false;
-}, { passive: true });
+      tracking = false;
+      dx = 0;
+      moved = false;
+    }, { passive: true });
   });
 }
 
