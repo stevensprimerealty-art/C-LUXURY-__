@@ -1,417 +1,399 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>C-LUXURY</title>
-
-  <!-- Ashluxury fonts -->
-  <link rel="stylesheet" href="https://ashluxury.com/wp-content/themes/ashluxury/assets/css/fonts.css">
-
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-
-<!-- HEADER -->
-<header class="header">
-  <div class="logo-spray">C-LUXURY</div>
-
-  <div class="header-icons">
-    <a class="icon-link" href="https://mrcharliestxs.myshopify.com/search" aria-label="Search">
-      <!-- Search SVG -->
-      <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
-        <path d="M16.5 16.5 21 21" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-    </a>
-
-    <button class="icon-btn" id="cartBtn" aria-label="Cart">
-      <!-- Cart SVG -->
-      <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M6.5 7.5h15l-1.3 7.5H8.2L6.5 7.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-        <path d="M6.5 7.5 5.7 4.5H3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
-      </svg>
-    </button>
-
-    <button class="icon-btn" id="menuBtn" aria-label="Menu">
-      <!-- Hamburger SVG -->
-      <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-    </button>
-  </div>
-</header>
-
-<!-- MENU OVERLAY -->
-<div class="menu-overlay" id="menu" aria-hidden="true">
-  <button class="close-menu" id="closeMenu" aria-label="Close Menu">✕</button>
-
-  <nav class="menu-nav">
-    <a href="#" class="menu-item"><span>C-NEW COLLECTION</span><span class="arrow">→</span></a>
-    <a href="#" class="menu-item"><span>MEN</span><span class="arrow">→</span></a>
-    <a href="#" class="menu-item"><span>WOMEN</span><span class="arrow">→</span></a>
-    <a href="#" class="menu-item"><span>DESIGNERS</span><span class="arrow">→</span></a>
-    <a href="#" class="menu-item"><span>SNEAKERS</span><span class="arrow">→</span></a>
-    <a href="#" class="menu-item"><span>GIFTS</span><span class="arrow">→</span></a>
-    <a href="#" class="menu-item"><span>WISHLISTS</span><span class="arrow">→</span></a>
-  </nav>
-
-  <div class="menu-account">
-    <span class="person">👤</span>
-    <a href="https://mrcharliestxs.myshopify.com/account" class="account-link">REGISTER / LOGIN</a>
-  </div>
-</div>
-
-<!-- CART DRAWER -->
-<aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
-  <div class="cart-head">
-    <div class="cart-title">CART</div>
-    <button class="cart-close" id="cartClose" aria-label="Close Cart">✕</button>
-  </div>
-
-  <iframe
-    id="cartFrame"
-    class="cart-frame"
-    src="https://mrcharliestxs.myshopify.com/cart"
-    title="Shopify Cart">
-  </iframe>
-
-  <div class="cart-actions">
-    <a class="cart-action-btn ghost" href="https://mrcharliestxs.myshopify.com/cart" target="_blank" rel="noreferrer">
-      OPEN CART
-    </a>
-    <a class="cart-action-btn solid" href="https://mrcharliestxs.myshopify.com/checkout" target="_blank" rel="noreferrer">
-      CHECKOUT
-    </a>
-  </div>
-</aside>
-<div class="backdrop" id="backdrop" hidden></div>
-
-<!-- HERO -->
-<section class="hero" id="top">
-  <div class="hero-slide active" style="background-image:url('./images/hero1.jpg')"></div>
-  <div class="hero-slide" style="background-image: url('./images/hero2.jpg');"></div>
-  <div class="hero-slide" style="background-image:url('./images/hero3.jpg')"></div>
-  <div class="hero-slide" style="background-image:url('./images/hero4.jpg')"></div>
-  <div class="hero-slide" style="background-image:url('./images/hero5.jpg')"></div>
-  <div class="hero-slide" style="background-image:url('./images/hero6.jpg')"></div>
-
-  <div class="hero-content">
-    <h1 id="heroText">A NEW YEAR<br>WITH PRESENCE</h1>
-    <div class="rings" id="rings" aria-label="Hero slide navigation"></div>
-
-    <a class="shop-btn" href="https://mrcharliestxs.myshopify.com/collections/all">
-      SHOP NOW
-    </a>
-  </div>
-</section>
-
-<!-- WISHLIST ROW — TRUE SWIPE + INFINITE -->
-<section class="slide-cards">
-  <div class="section-pad">
-
-    <div class="wishlist-slider" id="wishlistSlider" aria-label="Wishlist categories slider">
-      <div class="wishlist-track" id="wishlistTrack">
-
-        <div class="card">
-          <img src="images/wishlist-1.jpg" alt="Wishlist 1">
-        </div>
-
-        <div class="card">
-          <img src="images/wishlist-2.jpg" alt="Wishlist 2">
-        </div>
-
-        <div class="card">
-          <img src="images/wishlist-3.jpg" alt="Wishlist 3">
-        </div>
-
-        <div class="card">
-          <img src="images/wishlist-4.jpg" alt="Wishlist 4">
-        </div>
-
-        <div class="card">
-          <img src="images/wishlist-5.jpg" alt="Wishlist 5">
-        </div>
-
-      </div>
-    </div>
-
-    <div class="hint">SWIPE →</div>
-
-  </div>
-</section>
-
-<!-- NEW ARRIVALS -->
-<section class="arrivals" id="arrivals">
-  <div class="section-pad">
-    <h2 class="section-title">C-NEW ARRIVALS</h2>
-
-<div class="products arrivals-carousel" id="arrivalsCarousel" aria-label="New arrivals products slider">
-
-  <!-- CARD 1 -->
-  <article class="product arrivals-card">
-    <div class="mini-media" aria-label="Card 1 mini slider">
-      <img class="is-active" src="images/card1-a.jpg"
-        alt="CLUX WHITE AURA PUFFER JACKET"
-        data-name="CLUX WHITE AURA PUFFER JACKET"
-        data-price="$87.41"
-        data-url="https://mrcharliestxs.myshopify.com/products/mens-white-puffer-jacket-subtle-grey-logo-tribal-motif-all-over-print?variant=43914039492659"
-        data-variant="43914039492659">
-
-      <img src="images/card1-b.jpg"
-        alt="C-LUXURY MULLED BERRY CHAMPION HOODY"
-        data-name="C-LUXURY MULLED BERRY CHAMPION HOODY"
-        data-price="$74.99"
-        data-url="https://mrcharliestxs.myshopify.com/products/tie-dye-champion-hoodie-embroidered-black-galaxy-pullover?variant=43883467472947"
-        data-variant="43883467472947">
-
-      <img src="images/card1-c.jpg"
-        alt="CLUX ASTRAL ZIP HOODIE"
-        data-name="CLUX ASTRAL ZIP HOODIE"
-        data-price="$50.31"
-        data-url="https://mrcharliestxs.myshopify.com/products/unisex-heavy-blend%E2%84%A2-full-zip-hooded-sweatshirt?variant=43914016555059"
-        data-variant="43914016555059">
-
-      <button class="mini-nav prev" type="button" aria-label="Previous">‹</button>
-      <button class="mini-nav next" type="button" aria-label="Next">›</button>
-    </div>
-
-    <div class="p-meta">
-      <p class="p-name">CLUX WHITE AURA PUFFER JACKET</p>
-      <span class="p-price">$87.41</span>
-    </div>
-
-    <button class="buy-chip">BUY NOW</button>
-
-    <div class="overlay">
-      <a class="swift" href="https://mrcharliestxs.myshopify.com/products/mens-white-puffer-jacket-subtle-grey-logo-tribal-motif-all-over-print?variant=43914039492659" target="_blank" rel="noreferrer">SWIFT BUY</a>
-      <button class="cart addToCart" data-variant="43914039492659">ADD TO CART</button>
-    </div>
-  </article>
-
-  <!-- CARD 2 -->
-  <article class="product arrivals-card">
-    <div class="mini-media" aria-label="Card 2 mini slider">
-      <img class="is-active" src="images/card2-a.jpg"
-        alt="C-LUXURY STAY WEIRD DARK GREY HEATHER TANK JERSEY"
-        data-name="C-LUXURY STAY WEIRD DARK GREY HEATHER TANK JERSEY"
-        data-price="$21.66"
-        data-url="https://mrcharliestxs.myshopify.com/products/c-luxury-unisex-tank-jersey?variant=43883736498227"
-        data-variant="43883736498227">
-
-      <img src="images/card2-b.jpg"
-        alt="C-LUXURY WHITE SKULL TANK JERSEY"
-        data-name="C-LUXURY WHITE SKULL TANK JERSEY"
-        data-price="$21.39"
-        data-url="https://mrcharliestxs.myshopify.com/products/tank-top-c-luxury-drip?variant=43883754520627"
-        data-variant="43883754520627">
-
-      <img src="images/card2-c.jpg"
-        alt="C-LUX BLACK TANK JERSEY"
-        data-name="C-LUX BLACK TANK JERSEY"
-        data-price="$21.66"
-        data-url="https://mrcharliestxs.myshopify.com/products/unisex-jersey-muscle-tank?variant=43913950756915"
-        data-variant="43913950756915">
-
-      <button class="mini-nav prev" type="button" aria-label="Previous">‹</button>
-      <button class="mini-nav next" type="button" aria-label="Next">›</button>
-    </div>
-
-    <div class="p-meta">
-      <p class="p-name">C-LUXURY STAY WEIRD DARK GREY HEATHER TANK JERSEY</p>
-      <span class="p-price">$21.66</span>
-    </div>
-
-    <button class="buy-chip">BUY NOW</button>
-
-    <div class="overlay">
-      <a class="swift" href="https://mrcharliestxs.myshopify.com/products/c-luxury-unisex-tank-jersey?variant=43883736498227" target="_blank" rel="noreferrer">SWIFT BUY</a>
-      <button class="cart addToCart" data-variant="43883736498227">ADD TO CART</button>
-    </div>
-  </article>
-
-  <!-- CARD 3 -->
-  <article class="product arrivals-card">
-    <div class="mini-media" aria-label="Card 3 mini slider">
-      <img class="is-active" src="images/card3-a.jpg"
-        alt="CLUX DARK GREY STAR ACCENT MEN SHORTS"
-        data-name="CLUX DARK GREY STAR ACCENT MEN SHORTS"
-        data-price="$36.99"
-        data-url="https://mrcharliestxs.myshopify.com/products/mens-jogger-shorts-aop?variant=43883452858419"
-        data-variant="43883452858419">
-
-      <img src="images/card3-b.jpg"
-        alt="CLUX DARK GREY MEN SHORTS"
-        data-name="CLUX DARK GREY MEN SHORTS"
-        data-price="$27.60"
-        data-url="https://mrcharliestxs.myshopify.com/products/mens-board-shorts-minimal-care-script-with-star-accents?variant=43913121497139"
-        data-variant="43913121497139">
-
-      <img src="images/card3-c.jpg"
-        alt="C-LUXURY IVORY FLEECE SWEAT SHORTS"
-        data-name="C-LUXURY IVORY FLEECE SWEAT SHORTS"
-        data-price="$40.51"
-        data-url="https://mrcharliestxs.myshopify.com/products/lightweight-fleece-sweat-shorts?variant=43913123332147"
-        data-variant="43913123332147">
-
-      <button class="mini-nav prev" type="button" aria-label="Previous">‹</button>
-      <button class="mini-nav next" type="button" aria-label="Next">›</button>
-    </div>
-
-    <div class="p-meta">
-      <p class="p-name">CLUX DARK GREY STAR ACCENT MEN SHORTS</p>
-      <span class="p-price">$36.99</span>
-    </div>
-
-    <button class="buy-chip">BUY NOW</button>
-
-    <div class="overlay">
-      <a class="swift" href="https://mrcharliestxs.myshopify.com/products/mens-jogger-shorts-aop?variant=43883452858419" target="_blank" rel="noreferrer">SWIFT BUY</a>
-      <button class="cart addToCart" data-variant="43883452858419">ADD TO CART</button>
-    </div>
-  </article>
-
-  <!-- CARD 4 -->
-  <article class="product arrivals-card">
-    <div class="mini-media" aria-label="Card 4 mini slider">
-      <img class="is-active" src="images/card4-a.jpg"
-        alt="CLUX SWEATPANTS CHARCOAL HEATHER"
-        data-name="CLUX SWEATPANTS CHARCOAL HEATHER"
-        data-price="$44.46"
-        data-url="https://mrcharliestxs.myshopify.com/products/embroidered-minimalist-white-fleece-sweatpants-cozy-casual-loungewear?variant=43913161965619"
-        data-variant="43913161965619">
-
-      <img src="images/card4-b.jpg"
-        alt="C-LUXURY STAY WEIRD BLACK GRAPHIC PANTS"
-        data-name="C-LUXURY STAY WEIRD BLACK GRAPHIC PANTS"
-        data-price="$48.31"
-        data-url="https://mrcharliestxs.myshopify.com/products/black-graphic-pajama-pants-for-men-subtle-drip-logo-lounge-sleepwear?variant=43894343958579"
-        data-variant="43894343958579">
-
-      <img src="images/card4-c.jpg"
-        alt="C-LUXURY FLEECE SWEATPANTS"
-        data-name="C-LUXURY FLEECE SWEATPANTS"
-        data-price="$53.49"
-        data-url="https://mrcharliestxs.myshopify.com/products/garment-dyed-fleece-sweatpants-minimal-script-logo-joggers?variant=43883494244403"
-        data-variant="43883494244403">
-
-      <button class="mini-nav prev" type="button" aria-label="Previous">‹</button>
-      <button class="mini-nav next" type="button" aria-label="Next">›</button>
-    </div>
-
-    <div class="p-meta">
-      <p class="p-name">CLUX SWEATPANTS CHARCOAL HEATHER</p>
-      <span class="p-price">$44.46</span>
-    </div>
-
-    <button class="buy-chip">BUY NOW</button>
-
-    <div class="overlay">
-      <a class="swift" href="https://mrcharliestxs.myshopify.com/products/embroidered-minimalist-white-fleece-sweatpants-cozy-casual-loungewear?variant=43913161965619" target="_blank" rel="noreferrer">SWIFT BUY</a>
-      <button class="cart addToCart" data-variant="43913161965619">ADD TO CART</button>
-    </div>
-  </article>
-
-  <!-- CARD 5 -->
-  <article class="product arrivals-card">
-    <div class="mini-media" aria-label="Card 5 mini slider">
-      <img class="is-active" src="images/card5-a.jpg"
-        alt="CLUX CITRINE GRAPHIC TEA SHIRT"
-        data-name="CLUX CITRINE GRAPHIC TEA SHIRT"
-        data-price="$45.48"
-        data-url="https://mrcharliestxs.myshopify.com/products/wolf-wave-graphic-t-shirt-teal-floral-wolf-design?variant=43907422945331"
-        data-variant="43907422945331">
-
-      <img src="images/card5-b.jpg"
-        alt="CLUX WHITE TEA SHIRT"
-        data-name="CLUX WHITE TEA SHIRT"
-        data-price="$25.73"
-        data-url="https://mrcharliestxs.myshopify.com/products/samurai-moon-graphic-t-shirt-shine-back-print?variant=43781765431347"
-        data-variant="43781765431347">
-
-      <img src="images/card5-c.jpg"
-        alt="C-LUXURY PORT AUTHORITY MEN’S VEST"
-        data-name="C-LUXURY PORT AUTHORITY MEN’S VEST"
-        data-price="$61.71"
-        data-url="https://mrcharliestxs.myshopify.com/products/port-authority%C2%AE-mens-core-soft-shell-vest-embroidery?variant=43914050666547"
-        data-variant="43914050666547">
-
-      <button class="mini-nav prev" type="button" aria-label="Previous">‹</button>
-      <button class="mini-nav next" type="button" aria-label="Next">›</button>
-    </div>
-
-    <div class="p-meta">
-      <p class="p-name">CLUX CITRINE GRAPHIC TEA SHIRT</p>
-      <span class="p-price">$45.48</span>
-    </div>
-
-    <button class="buy-chip">BUY NOW</button>
-
-    <div class="overlay">
-      <a class="swift" href="https://mrcharliestxs.myshopify.com/products/wolf-wave-graphic-t-shirt-teal-floral-wolf-design?variant=43907422945331" target="_blank" rel="noreferrer">SWIFT BUY</a>
-      <button class="cart addToCart" data-variant="43907422945331">ADD TO CART</button>
-    </div>
-  </article>
-
-</div>
-
-    <!-- MEN collection link (default) -->
-    <a class="view-more" href="https://mrcharliestxs.myshopify.com/collections/men" aria-label="View more to Men collection">
-      <span class="checker"></span>
-      VIEW MORE →
-    </a>
-  </div>
-</section>
-
-<!-- C-CROPPED LUXURY WEARS -->
-<section class="cropped" id="cropped">
-  <div class="section-pad">
-    <h2 class="section-title spray-subtitle">C-CROPPED LUXURY WEARS</h2>
-
-    <div class="products" aria-label="Cropped luxury wears slider">
-      <article class="product placeholder">
-        <div class="ph-img">COMING SOON</div>
-        <div class="p-meta">
-          <p class="p-name">C-CROPPED LUXURY WEAR</p>
-          <span class="p-price">—</span>
-        </div>
-        <button class="buy-chip">BUY NOW</button>
-        <div class="overlay">
-          <a class="swift" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">SHOP</a>
-          <a class="cart" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">VIEW</a>
-        </div>
-      </article>
-
-      <article class="product placeholder">
-        <div class="ph-img">COMING SOON</div>
-        <div class="p-meta">
-          <p class="p-name">C-CROPPED LUXURY WEAR</p>
-          <span class="p-price">—</span>
-        </div>
-        <button class="buy-chip">BUY NOW</button>
-        <div class="overlay">
-          <a class="swift" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">SHOP</a>
-          <a class="cart" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">VIEW</a>
-        </div>
-      </article>
-
-      <article class="product placeholder">
-        <div class="ph-img">COMING SOON</div>
-        <div class="p-meta">
-          <p class="p-name">C-CROPPED LUXURY WEAR</p>
-          <span class="p-price">—</span>
-        </div>
-        <button class="buy-chip">BUY NOW</button>
-        <div class="overlay">
-          <a class="swift" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">SHOP</a>
-          <a class="cart" href="https://mrcharliestxs.myshopify.com/collections/all" target="_blank" rel="noreferrer">VIEW</a>
-        </div>
-      </article>
-    </div>
-  </div>
-</section>
-
-<script src="main.js?v=4"></script>
-</body>
-</html>
+/* =============================
+   C-LUXURY — FINAL main.js (COPY/PASTE)
+   - Menu / Cart stable
+   - Hero slider + rings stable
+   - Product overlay + add-to-cart stable
+   - Wishlist uses NATIVE scroll (CSS handles smooth touch)
+   - C-NEW ARRIVALS: main auto-scroll (4.5s) + mini slider (tap/swipe + fade)
+   FIXES:
+   - Mini slider swipe prevents page scroll (iPhone) ✅
+   - Auto-scroll resumes on touchcancel too ✅
+   ============================= */
+
+const SHOPIFY = {
+  domain: "https://mrcharliestxs.myshopify.com",
+  cartUrl: "https://mrcharliestxs.myshopify.com/cart",
+  cartAddPermalink: (variantId, qty = 1) =>
+    `https://mrcharliestxs.myshopify.com/cart/add?id=${encodeURIComponent(
+      variantId
+    )}&quantity=${encodeURIComponent(qty)}`
+};
+
+// ===== Elements
+const menuBtn = document.getElementById("menuBtn");
+const menu = document.getElementById("menu");
+const closeMenu = document.getElementById("closeMenu");
+
+const cartBtn = document.getElementById("cartBtn");
+const cartDrawer = document.getElementById("cartDrawer");
+const cartClose = document.getElementById("cartClose");
+const backdrop = document.getElementById("backdrop");
+const cartFrame = document.getElementById("cartFrame");
+
+const heroText = document.getElementById("heroText");
+const ringsWrap = document.getElementById("rings");
+const slides = Array.from(document.querySelectorAll(".hero-slide"));
+
+// ===== Menu
+function openMenu() {
+  if (!menu || !backdrop) return;
+  menu.setAttribute("aria-hidden", "false");
+  backdrop.hidden = false;
+}
+function closeMenuFn() {
+  if (!menu) return;
+  menu.setAttribute("aria-hidden", "true");
+  if (
+    backdrop &&
+    (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")
+  )
+    backdrop.hidden = true;
+}
+if (menuBtn) menuBtn.addEventListener("click", openMenu);
+if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
+
+// ===== Cart
+function openCart() {
+  if (!cartDrawer || !backdrop) return;
+  cartDrawer.setAttribute("aria-hidden", "false");
+  backdrop.hidden = false;
+  if (cartFrame) cartFrame.src = SHOPIFY.cartUrl + "?t=" + Date.now();
+}
+function closeCart() {
+  if (!cartDrawer) return;
+  cartDrawer.setAttribute("aria-hidden", "true");
+  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false"))
+    backdrop.hidden = true;
+}
+if (cartBtn) cartBtn.addEventListener("click", openCart);
+if (cartClose) cartClose.addEventListener("click", closeCart);
+
+if (backdrop) {
+  backdrop.addEventListener("click", () => {
+    closeMenuFn();
+    closeCart();
+  });
+}
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeMenuFn();
+    closeCart();
+  }
+});
+
+// ===== Hero slider + rings
+const texts = [
+  "A NEW YEAR<br>WITH PRESENCE",
+  "SILENCE<br>CONNOTES NOISE",
+  "LUXURY<br>WITHOUT NOISE",
+  "PRESENCE<br>WITHOUT NOISE",
+  "SILENCE IS POWER",
+  "LUXURY<br>WITHOUT NOISE"
+].slice(0, slides.length);
+
+const INTERVAL = 4300;
+let index = 0;
+let timer = null;
+
+function buildRings() {
+  if (!ringsWrap || !slides.length) return;
+  ringsWrap.innerHTML = "";
+  slides.forEach((_, i) => {
+    const b = document.createElement("button");
+    b.className = "ring" + (i === 0 ? " is-active" : "");
+    b.type = "button";
+    b.setAttribute("aria-label", `Go to slide ${i + 1}`);
+    b.addEventListener("click", () => goToSlide(i, true));
+    ringsWrap.appendChild(b);
+  });
+}
+function setActiveRing(i) {
+  if (!ringsWrap) return;
+  const all = ringsWrap.querySelectorAll(".ring");
+  all.forEach((r) => r.classList.remove("is-active"));
+  if (all[i]) all[i].classList.add("is-active");
+}
+function goToSlide(i, resetTimer = false) {
+  if (!slides.length) return;
+
+  if (heroText) heroText.classList.add("fadeout");
+
+  setTimeout(() => {
+    slides.forEach((s) => s.classList.remove("active"));
+    slides[i].classList.add("active");
+    if (heroText) {
+      heroText.innerHTML = texts[i] || "";
+      heroText.classList.remove("fadeout");
+    }
+    setActiveRing(i);
+    index = i;
+  }, 220);
+
+  if (resetTimer) restartTimer();
+}
+function nextSlide() {
+  goToSlide((index + 1) % slides.length, false);
+}
+function restartTimer() {
+  if (timer) clearInterval(timer);
+  timer = setInterval(nextSlide, INTERVAL);
+}
+
+buildRings();
+restartTimer();
+
+// ===== Product overlay tap + add to cart
+const products = Array.from(document.querySelectorAll(".product"));
+products.forEach((p) => {
+  p.addEventListener("click", (e) => {
+    const el = e.target;
+
+    // IMPORTANT: don't toggle overlay when clicking mini-nav arrows
+    if (
+      el.closest("a") ||
+      el.closest("button.addToCart") ||
+      el.classList.contains("buy-chip") ||
+      el.closest(".mini-nav")
+    )
+      return;
+
+    const isOpen = p.classList.contains("is-open");
+    products.forEach((x) => x.classList.remove("is-open"));
+    if (!isOpen) p.classList.add("is-open");
+  });
+
+  const chip = p.querySelector(".buy-chip");
+  if (chip) {
+    chip.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      products.forEach((x) => x.classList.remove("is-open"));
+      p.classList.add("is-open");
+    });
+  }
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".product"))
+    products.forEach((x) => x.classList.remove("is-open"));
+});
+
+function addToCartViaIframe(variantId) {
+  return new Promise((resolve) => {
+    const iframe = document.createElement("iframe");
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.style.position = "absolute";
+    iframe.style.left = "-9999px";
+    iframe.src = SHOPIFY.cartAddPermalink(variantId, 1);
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.remove();
+        resolve();
+      }, 400);
+    };
+    document.body.appendChild(iframe);
+  });
+}
+
+document.querySelectorAll(".addToCart").forEach((btn) => {
+  btn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const variantId = btn.getAttribute("data-variant");
+    if (!variantId) return;
+
+    const original = btn.textContent;
+    btn.textContent = "ADDING…";
+    btn.disabled = true;
+
+    await addToCartViaIframe(variantId);
+
+    btn.textContent = "ADDED";
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.disabled = false;
+    }, 900);
+
+    openCart();
+  });
+});
+
+// ✅ Wishlist: NO JS drag / NO transform / NO cloning
+// CSS handles native smooth horizontal scroll on iPhone.
+
+/* ================= MAIN ARRIVALS AUTO SCROLL (every 4.5s) ================= */
+const arrivalsCarousel = document.getElementById("arrivalsCarousel");
+
+if (arrivalsCarousel) {
+  let autoScrollTimer = null;
+  const AUTO_SCROLL_DELAY = 4500;
+
+  function stopAutoScroll() {
+    if (autoScrollTimer) clearInterval(autoScrollTimer);
+    autoScrollTimer = null;
+  }
+
+  function startAutoScroll() {
+    stopAutoScroll();
+    autoScrollTimer = setInterval(() => {
+      const maxScroll = arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
+
+      if (arrivalsCarousel.scrollLeft >= maxScroll - 5) {
+        arrivalsCarousel.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        arrivalsCarousel.scrollBy({
+          left: Math.max(280, arrivalsCarousel.clientWidth * 0.9),
+          behavior: "smooth"
+        });
+      }
+    }, AUTO_SCROLL_DELAY);
+  }
+
+  // Pause when user interacts
+  ["touchstart", "mousedown", "wheel", "pointerdown"].forEach((evt) => {
+    arrivalsCarousel.addEventListener(evt, stopAutoScroll, { passive: true });
+  });
+
+  // Resume after interaction (includes touchcancel ✅)
+  ["touchend", "touchcancel", "mouseup", "pointerup"].forEach((evt) => {
+    arrivalsCarousel.addEventListener(
+      evt,
+      () => setTimeout(startAutoScroll, 1200),
+      { passive: true }
+    );
+  });
+
+  startAutoScroll();
+}
+
+/* ================= MINI SLIDER INSIDE EACH CARD (3 images) =================
+   - tap ‹ / ›
+   - swipe left/right
+   - fades to next image
+   - updates name/price + swift url + add-to-cart variant
+*/
+function setMiniActive(card, newIndex) {
+  const media = card.querySelector(".mini-media");
+  if (!media) return;
+
+  const imgs = Array.from(media.querySelectorAll("img"));
+  if (!imgs.length) return;
+
+  const count = imgs.length;
+  const idx = (newIndex + count) % count;
+
+  imgs.forEach((im) => im.classList.remove("is-active"));
+  imgs[idx].classList.add("is-active");
+
+  // Update meta + links from data- attributes
+  const active = imgs[idx];
+  const name = active.getAttribute("data-name") || "";
+  const price = active.getAttribute("data-price") || "";
+  const url = active.getAttribute("data-url") || "#";
+  const variant = active.getAttribute("data-variant") || "";
+
+  const nameEl = card.querySelector(".p-name");
+  const priceEl = card.querySelector(".p-price");
+  if (nameEl) nameEl.textContent = name.toUpperCase();
+  if (priceEl) priceEl.textContent = price;
+
+  const swift = card.querySelector("a.swift");
+  if (swift) swift.href = url;
+
+  const addBtn = card.querySelector("button.addToCart");
+  if (addBtn && variant) addBtn.setAttribute("data-variant", variant);
+
+  card.dataset.miniIndex = String(idx);
+}
+
+function initMiniSliders() {
+  const cards = Array.from(document.querySelectorAll(".arrivals-card"));
+  cards.forEach((card) => {
+    // init index = active img
+    const imgs = Array.from(card.querySelectorAll(".mini-media img"));
+    const startIdx = Math.max(
+      0,
+      imgs.findIndex((i) => i.classList.contains("is-active"))
+    );
+    setMiniActive(card, startIdx);
+
+    const prevBtn = card.querySelector(".mini-nav.prev");
+    const nextBtn = card.querySelector(".mini-nav.next");
+
+    const getIndex = () => parseInt(card.dataset.miniIndex || "0", 10) || 0;
+
+    if (prevBtn) {
+      prevBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setMiniActive(card, getIndex() - 1);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setMiniActive(card, getIndex() + 1);
+      });
+    }
+
+    // Swipe support
+    const media = card.querySelector(".mini-media");
+    if (!media) return;
+
+    // IMPORTANT for iPhone: stop page scroll while swiping the mini slider
+    media.style.touchAction = "pan-y";
+
+    let startX = 0;
+    let dx = 0;
+    let tracking = false;
+
+    media.addEventListener(
+      "touchstart",
+      (e) => {
+        if (!e.touches || !e.touches[0]) return;
+        tracking = true;
+        startX = e.touches[0].clientX;
+        dx = 0;
+      },
+      { passive: true }
+    );
+
+    // ✅ passive:false + preventDefault to stop page scroll
+    media.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!tracking || !e.touches || !e.touches[0]) return;
+        e.preventDefault();
+        dx = e.touches[0].clientX - startX;
+      },
+      { passive: false }
+    );
+
+    media.addEventListener(
+      "touchend",
+      () => {
+        if (!tracking) return;
+        tracking = false;
+        if (Math.abs(dx) < 35) return;
+        if (dx < 0) setMiniActive(card, getIndex() + 1);
+        else setMiniActive(card, getIndex() - 1);
+      },
+      { passive: true }
+    );
+
+    media.addEventListener(
+      "touchcancel",
+      () => {
+        tracking = false;
+        dx = 0;
+      },
+      { passive: true }
+    );
+  });
+}
+
+initMiniSliders();
