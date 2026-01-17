@@ -1,5 +1,13 @@
 /* =============================
    C-LUXURY — FINAL main.js (COPY/PASTE)
+   FIXES:
+   - Mini slider swipe works on iPhone (prevents page scroll)
+   - Swipe does NOT accidentally open overlay (iOS “ghost click” fix) ✅
+   - Tap on product image opens overlay options (NOT product page)
+   - BUY NOW link goes to ACTIVE product url
+   - Swift Buy goes to CHECKOUT (adds active variant first) SAME TAB
+   - Add to cart adds ACTIVE variant + opens cart drawer
+   - Arrivals auto-scroll loops smoother
    ============================= */
 
 const SHOPIFY = {
@@ -177,8 +185,15 @@ function openOverlay(card) {
 products.forEach((p) => {
   // Tap anywhere on card (except buttons/links) opens overlay
   p.addEventListener("click", (e) => {
+    // ✅ iOS ghost click after swipe fix
+    if (p.dataset.suppressClick === "1") {
+      p.dataset.suppressClick = "0";
+      return;
+    }
+
     const el = e.target;
     if (el.closest("a") || el.closest("button")) return;
+
     const isOpen = p.classList.contains("is-open");
     products.forEach((x) => x.classList.remove("is-open"));
     if (!isOpen) openOverlay(p);
@@ -194,12 +209,11 @@ products.forEach((p) => {
     });
   }
 
-  // BuyNow link should go to ACTIVE product url
+  // BuyNow link navigates normally (href is synced)
   const buyNow = p.querySelector("a.buyNow");
   if (buyNow) {
     buyNow.addEventListener("click", (e) => {
       e.stopPropagation();
-      // let href navigate normally (same tab)
     });
   }
 });
@@ -279,10 +293,8 @@ if (arrivalsCarousel) {
       const maxScroll = arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
 
       if (arrivalsCarousel.scrollLeft >= maxScroll - 10) {
-        // Clean reset (no weird loop jump)
         arrivalsCarousel.style.scrollBehavior = "auto";
         arrivalsCarousel.scrollLeft = 0;
-        // restore smooth after reset
         requestAnimationFrame(() => {
           arrivalsCarousel.style.scrollBehavior = "smooth";
         });
@@ -306,7 +318,7 @@ if (arrivalsCarousel) {
   startAutoScroll();
 }
 
-// ================= MINI SLIDER (SWIPE ONLY) =================
+// ================= MINI SLIDER (SWIPE) =================
 function setMiniActive(card, newIndex) {
   const media = card.querySelector(".mini-media");
   if (!media) return;
@@ -379,6 +391,9 @@ function initMiniSliders() {
 
       // swipe changes mini image
       if (Math.abs(dx) >= 35) {
+        // ✅ IMPORTANT: prevent iOS “ghost click” after swipe
+        card.dataset.suppressClick = "1";
+
         const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
         if (dx < 0) setMiniActive(card, cur + 1);
         else setMiniActive(card, cur - 1);
