@@ -268,26 +268,6 @@ body{
   color:var(--white);letter-spacing:1px;font-size:11px;cursor:pointer;
 }
 
-/* ✅ FIX: hide chip when overlay open */
-.product.is-open .buy-chip{opacity:0;pointer-events:none}
-
-.overlay{
-  position:absolute;inset:0;border-radius:var(--radius);
-  background:var(--glass2);backdrop-filter:blur(14px);
-  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;
-  opacity:0;pointer-events:none;transition:opacity .35s ease;
-}
-.product.is-open .overlay,
-.product:hover .overlay{opacity:1;pointer-events:auto}
-
-.overlay a,.overlay button{
-  width:75%;padding:12px 12px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.20);
-  background:rgba(255,255,255,.06);color:var(--white);
-  text-decoration:none;letter-spacing:1px;font-size:12px;
-  cursor:pointer;backdrop-filter:blur(12px);text-align:center;
-}
-
 .view-more{
   display:flex;align-items:center;gap:10px;margin-top:16px;
   text-decoration:none;color:#000;letter-spacing:2px;font-size:12px;
@@ -366,3 +346,39 @@ body{
   pointer-events:none !important;
 }
 
+/* C-NEW ARRIVALS — ACTIONS BELOW CARD */
+.actions-panel{
+  display:none;
+  margin-top:12px;
+  gap:10px;
+}
+
+.product.is-open .actions-panel{
+  display:flex;
+}
+
+.actions-panel a,
+.actions-panel button{
+  flex:1;
+  padding:12px 10px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.12);
+  background:rgba(0,0,0,.06);
+  color:#000;
+  text-decoration:none;
+  letter-spacing:1px;
+  font-size:12px;
+  cursor:pointer;
+  text-align:center;
+}
+
+/* ✅ keep BUY NOW chip visible */
+.product.is-open .buy-chip{
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* ✅ disable overlay completely (safety) */
+.overlay{
+  display:none !important;
+}
