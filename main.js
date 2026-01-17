@@ -1,13 +1,10 @@
 /* =============================
    C-LUXURY — FINAL main.js (COPY/PASTE)
-   FIXES:
-   - Mini slider swipe works on iPhone (prevents page scroll)
-   - Swipe does NOT accidentally open overlay (iOS “ghost click” fix) ✅
-   - Tap on product image opens overlay options (NOT product page)
-   - BUY NOW link goes to ACTIVE product url
-   - Swift Buy goes to CHECKOUT (adds active variant first) SAME TAB
-   - Add to cart adds ACTIVE variant + opens cart drawer
-   - Arrivals auto-scroll loops smoother
+   RULES YOU WANTED:
+   - Mini slider: swipe only (no options while swiping)
+   - Product options open ONLY when tapping BUY NOW chip
+   - Options are BELOW the card (card-actions)
+   - No arrivals auto-scroll
    ============================= */
 
 const SHOPIFY = {
@@ -44,8 +41,9 @@ function openMenu() {
 function closeMenuFn() {
   if (!menu) return;
   menu.setAttribute("aria-hidden", "true");
-  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false"))
+  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")) {
     backdrop.hidden = true;
+  }
 }
 if (menuBtn) menuBtn.addEventListener("click", openMenu);
 if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
@@ -60,8 +58,9 @@ function openCart() {
 function closeCart() {
   if (!cartDrawer) return;
   cartDrawer.setAttribute("aria-hidden", "true");
-  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false"))
+  if (backdrop && (!menu || menu.getAttribute("aria-hidden") !== "false")) {
     backdrop.hidden = true;
+  }
 }
 if (cartBtn) cartBtn.addEventListener("click", openCart);
 if (cartClose) cartClose.addEventListener("click", closeCart);
@@ -76,10 +75,11 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeMenuFn();
     closeCart();
+    document.querySelectorAll(".product.is-open").forEach((x) => x.classList.remove("is-open"));
   }
 });
 
-// ===== Hero slider + rings
+// ===== Hero slider + rings (keep this)
 const texts = [
   "A NEW YEAR<br>WITH PRESENCE",
   "SILENCE<br>CONNOTES NOISE",
@@ -167,60 +167,45 @@ function getActiveVariantAndUrl(card) {
   return { variant, url };
 }
 
-function syncOverlayLinks(card) {
+function syncActionLinks(card) {
   const { url } = getActiveVariantAndUrl(card);
-  const buyNow = card.querySelector("a.buyNow");
+
+  // Buy Now button in card-actions must go to active url
+  const buyNow = card.querySelector(".card-actions a.buyNow");
   if (buyNow) buyNow.href = url && url !== "#" ? url : "#";
 }
 
-// ===== Product overlay behavior
+// ===== Product actions open ONLY on BUY NOW CHIP
 const products = Array.from(document.querySelectorAll(".product"));
 
-function openOverlay(card) {
+function closeAllActions() {
   products.forEach((x) => x.classList.remove("is-open"));
+}
+
+function openActions(card) {
+  closeAllActions();
   card.classList.add("is-open");
-  syncOverlayLinks(card);
+  syncActionLinks(card);
 }
 
 products.forEach((p) => {
-  // Tap anywhere on card (except buttons/links) opens overlay
-  p.addEventListener("click", (e) => {
-    // ✅ iOS ghost click after swipe fix
-    if (p.dataset.suppressClick === "1") {
-      p.dataset.suppressClick = "0";
-      return;
-    }
+  // ✅ DO NOT open options on tapping image/card anymore
+  // So we do NOT attach "click anywhere opens overlay"
 
-    const el = e.target;
-    if (el.closest("a") || el.closest("button")) return;
-
-    const isOpen = p.classList.contains("is-open");
-    products.forEach((x) => x.classList.remove("is-open"));
-    if (!isOpen) openOverlay(p);
-  });
-
-  // BUY NOW chip opens overlay (not navigate)
+  // ✅ Only BUY NOW chip opens options
   const chip = p.querySelector(".buy-chip");
   if (chip) {
     chip.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      openOverlay(p);
-    });
-  }
-
-  // BuyNow link navigates normally (href is synced)
-  const buyNow = p.querySelector("a.buyNow");
-  if (buyNow) {
-    buyNow.addEventListener("click", (e) => {
-      e.stopPropagation();
+      openActions(p);
     });
   }
 });
 
+// close when clicking outside products
 document.addEventListener("click", (e) => {
-  if (!e.target.closest(".product"))
-    products.forEach((x) => x.classList.remove("is-open"));
+  if (!e.target.closest(".product")) closeAllActions();
 });
 
 // ===== Add to cart (ACTIVE variant)
@@ -269,54 +254,18 @@ document.querySelectorAll("a.swift").forEach((a) => {
     await addToCartViaIframe(variant);
 
     a.textContent = original;
-
-    // same tab is smoother on iPhone
     window.location.href = SHOPIFY.checkoutUrl;
   });
 });
 
-// ================= ARRIVALS AUTO SCROLL =================
-const arrivalsCarousel = document.getElementById("arrivalsCarousel");
-
-if (arrivalsCarousel) {
-  let autoScrollTimer = null;
-  const AUTO_SCROLL_DELAY = 4500;
-
-  function stopAutoScroll() {
-    if (autoScrollTimer) clearInterval(autoScrollTimer);
-    autoScrollTimer = null;
-  }
-
-  function startAutoScroll() {
-    stopAutoScroll();
-    autoScrollTimer = setInterval(() => {
-      const maxScroll = arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
-
-      // ✅ STOP at the end (NO loop back)
-      if (arrivalsCarousel.scrollLeft >= maxScroll - 10) {
-        stopAutoScroll();
-        return;
-      }
-
-      arrivalsCarousel.scrollBy({
-        left: Math.max(280, arrivalsCarousel.clientWidth * 0.9),
-        behavior: "smooth"
-      });
-    }, AUTO_SCROLL_DELAY);
-  }
-
-  ["touchstart", "mousedown", "wheel", "pointerdown"].forEach((evt) => {
-    arrivalsCarousel.addEventListener(evt, stopAutoScroll, { passive: true });
+// ===== Keep buyNow clicks normal (just stop closing)
+document.querySelectorAll("a.buyNow").forEach((a) => {
+  a.addEventListener("click", (e) => {
+    e.stopPropagation();
   });
+});
 
-  ["touchend", "touchcancel", "mouseup", "pointerup"].forEach((evt) => {
-    arrivalsCarousel.addEventListener(evt, () => setTimeout(startAutoScroll, 1200), { passive: true });
-  });
-
-  startAutoScroll();
-}
-
-// ================= MINI SLIDER (SWIPE) =================
+// ================= MINI SLIDER (SWIPE ONLY) =================
 function setMiniActive(card, newIndex) {
   const media = card.querySelector(".mini-media");
   if (!media) return;
@@ -341,8 +290,8 @@ function setMiniActive(card, newIndex) {
 
   card.dataset.miniIndex = String(idx);
 
-  // keep overlay buyNow synced to active product
-  syncOverlayLinks(card);
+  // keep card-actions Buy Now synced to active product
+  syncActionLinks(card);
 }
 
 function initMiniSliders() {
@@ -356,72 +305,53 @@ function initMiniSliders() {
     const media = card.querySelector(".mini-media");
     if (!media) return;
 
-    // Let vertical scroll work, we handle horizontal
     media.style.touchAction = "pan-y";
 
     let startX = 0;
     let dx = 0;
     let tracking = false;
-    let moved = false;
 
     media.addEventListener("touchstart", (e) => {
-  if (!e.touches || !e.touches[0]) return;
+      if (!e.touches || !e.touches[0]) return;
 
-  // ✅ if overlay is open, close it when user starts swiping
-  card.classList.remove("is-open");
-  card.classList.remove("is-swiping");
+      // ✅ while swiping, close actions (so nothing shows)
+      card.classList.remove("is-open");
 
-  tracking = true;
-  moved = false;
-  startX = e.touches[0].clientX;
-  dx = 0;
-}, { passive: true });
+      tracking = true;
+      startX = e.touches[0].clientX;
+      dx = 0;
+    }, { passive: true });
 
-media.addEventListener("touchmove", (e) => {
-  if (!tracking || !e.touches || !e.touches[0]) return;
-  dx = e.touches[0].clientX - startX;
+    media.addEventListener("touchmove", (e) => {
+      if (!tracking || !e.touches || !e.touches[0]) return;
+      dx = e.touches[0].clientX - startX;
 
-  if (Math.abs(dx) > 12) {
-    moved = true;
+      if (Math.abs(dx) > 12) {
+        e.preventDefault(); // stop page scroll on horizontal swipe
+      }
+    }, { passive: false });
 
-    // ✅ while swiping, NEVER show overlay options
-    card.classList.add("is-swiping");
+    media.addEventListener("touchend", () => {
+      if (!tracking) return;
+      tracking = false;
 
-    e.preventDefault();
-  }
-}, { passive: false });
+      // swipe changes image
+      if (Math.abs(dx) >= 35) {
+        const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
+        if (dx < 0) setMiniActive(card, cur + 1);
+        else setMiniActive(card, cur - 1);
+      }
 
-media.addEventListener("touchend", () => {
-  if (!tracking) return;
-  tracking = false;
+      // ✅ tap does NOTHING (no open)
+    }, { passive: true });
 
-  // swipe changes mini image
-  if (Math.abs(dx) >= 35) {
-    // ✅ prevent iOS ghost click after swipe
-    card.dataset.suppressClick = "1";
-
-    const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
-    if (dx < 0) setMiniActive(card, cur + 1);
-    else setMiniActive(card, cur - 1);
-
-    // ✅ remove swiping lock shortly after swipe ends
-    setTimeout(() => card.classList.remove("is-swiping"), 120);
-    return;
-  }
-
-  // tap image opens overlay options
-  card.classList.remove("is-swiping");
-  if (!moved) openOverlay(card);
-}, { passive: true });
-
-media.addEventListener("touchcancel", () => {
-  tracking = false;
-  dx = 0;
-  moved = false;
-  card.classList.remove("is-swiping");
-}, { passive: true });
-
-  }); // ✅ closes cards.forEach((card)=>{ ... })
-}     // ✅ closes function initMiniSliders()
+    media.addEventListener("touchcancel", () => {
+      tracking = false;
+      dx = 0;
+    }, { passive: true });
+  });
+}
 
 initMiniSliders();
+
+/* ✅ Arrivals auto-scroll REMOVED بالكامل (nothing here) */
