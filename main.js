@@ -2,9 +2,10 @@
    C-LUXURY — FINAL main.js (COPY/PASTE)
    FIXES:
    - Mini slider swipe works on iPhone (prevents page scroll)
-   - Product image tap goes to ACTIVE product link
+   - Tap on product image opens ACTIVE product url
    - Swift Buy goes to CHECKOUT (adds active variant first)
-   - Arrivals auto-scroll loops smoothly (no ugly jump)
+   - Arrivals auto-scroll loops smoother
+   - NO arrows (swipe only)
    ============================= */
 
 const SHOPIFY = {
@@ -41,10 +42,8 @@ function openMenu() {
 function closeMenuFn() {
   if (!menu) return;
   menu.setAttribute("aria-hidden", "true");
-  if (
-    backdrop &&
-    (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")
-  ) backdrop.hidden = true;
+  if (backdrop && (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false"))
+    backdrop.hidden = true;
 }
 if (menuBtn) menuBtn.addEventListener("click", openMenu);
 if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
@@ -135,7 +134,6 @@ function restartTimer() {
   if (timer) clearInterval(timer);
   timer = setInterval(nextSlide, INTERVAL);
 }
-
 buildRings();
 restartTimer();
 
@@ -156,19 +154,25 @@ function addToCartViaIframe(variantId) {
         resolve();
       }, 450);
     };
-
     document.body.appendChild(iframe);
   });
 }
 
-// ===== Product overlay tap + open overlay
+function getActiveVariantAndUrl(card) {
+  const activeImg = card.querySelector(".mini-media img.is-active");
+  const variant = activeImg?.getAttribute("data-variant") || "";
+  const url = activeImg?.getAttribute("data-url") || "#";
+  return { variant, url };
+}
+
+// ===== Product overlay
 const products = Array.from(document.querySelectorAll(".product"));
 
 products.forEach((p) => {
   p.addEventListener("click", (e) => {
     const el = e.target;
 
-    // don't toggle overlay if clicking links/buttons
+    // If clicking buttons/links, don't toggle
     if (el.closest("a") || el.closest("button")) return;
 
     const isOpen = p.classList.contains("is-open");
@@ -192,7 +196,7 @@ document.addEventListener("click", (e) => {
     products.forEach((x) => x.classList.remove("is-open"));
 });
 
-// ===== ADD TO CART button
+// ===== Add to cart
 document.querySelectorAll(".addToCart").forEach((btn) => {
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -217,7 +221,7 @@ document.querySelectorAll(".addToCart").forEach((btn) => {
   });
 });
 
-// ===== SWIFT BUY (go to checkout, not image link)
+// ===== Swift Buy (checkout)
 document.querySelectorAll("a.swift").forEach((a) => {
   a.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -226,34 +230,22 @@ document.querySelectorAll("a.swift").forEach((a) => {
     const card = a.closest(".arrivals-card");
     if (!card) return;
 
-    const activeImg = card.querySelector(".mini-media img.is-active");
-    const variantId =
-      (activeImg && activeImg.getAttribute("data-variant")) ||
-      card.querySelector("button.addToCart")?.getAttribute("data-variant");
-
-    if (!variantId) {
-      window.open(SHOPIFY.checkoutUrl, "_blank");
-      return;
-    }
+    const { variant } = getActiveVariantAndUrl(card);
 
     a.textContent = "LOADING…";
-
-    await addToCartViaIframe(variantId);
-
+    if (variant) await addToCartViaIframe(variant);
     a.textContent = "SWIFT BUY";
+
     window.open(SHOPIFY.checkoutUrl, "_blank");
   });
 });
 
-// ✅ Wishlist is CSS-native scroll only (no JS)
-
-// ================= MAIN ARRIVALS AUTO SCROLL (4.5s) =================
+// ================= MAIN ARRIVALS AUTO SCROLL =================
 const arrivalsCarousel = document.getElementById("arrivalsCarousel");
 
 if (arrivalsCarousel) {
   let autoScrollTimer = null;
   const AUTO_SCROLL_DELAY = 4500;
-  let isAutoJumping = false;
 
   function stopAutoScroll() {
     if (autoScrollTimer) clearInterval(autoScrollTimer);
@@ -263,16 +255,10 @@ if (arrivalsCarousel) {
   function startAutoScroll() {
     stopAutoScroll();
     autoScrollTimer = setInterval(() => {
-      if (isAutoJumping) return;
+      const maxScroll = arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
 
-      const maxScroll =
-        arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
-
-      // if near the end -> smooth back to start, then unlock
       if (arrivalsCarousel.scrollLeft >= maxScroll - 10) {
-        isAutoJumping = true;
         arrivalsCarousel.scrollTo({ left: 0, behavior: "smooth" });
-        setTimeout(() => (isAutoJumping = false), 700);
       } else {
         arrivalsCarousel.scrollBy({
           left: Math.max(280, arrivalsCarousel.clientWidth * 0.9),
@@ -287,11 +273,7 @@ if (arrivalsCarousel) {
   });
 
   ["touchend", "touchcancel", "mouseup", "pointerup"].forEach((evt) => {
-    arrivalsCarousel.addEventListener(
-      evt,
-      () => setTimeout(startAutoScroll, 1200),
-      { passive: true }
-    );
+    arrivalsCarousel.addEventListener(evt, () => setTimeout(startAutoScroll, 1200), { passive: true });
   });
 
   startAutoScroll();
@@ -314,20 +296,13 @@ function setMiniActive(card, newIndex) {
   const active = imgs[idx];
   const name = active.getAttribute("data-name") || "";
   const price = active.getAttribute("data-price") || "";
-  const url = active.getAttribute("data-url") || "#";
   const variant = active.getAttribute("data-variant") || "";
 
-  // update meta text
   const nameEl = card.querySelector(".p-name");
   const priceEl = card.querySelector(".p-price");
   if (nameEl) nameEl.textContent = name.toUpperCase();
   if (priceEl) priceEl.textContent = price;
 
-  // update product tap link (image click)
-  const productLink = card.querySelector("a.productLink");
-  if (productLink) productLink.href = url;
-
-  // update add-to-cart variant
   const addBtn = card.querySelector("button.addToCart");
   if (addBtn && variant) addBtn.setAttribute("data-variant", variant);
 
@@ -339,10 +314,7 @@ function initMiniSliders() {
 
   cards.forEach((card) => {
     const imgs = Array.from(card.querySelectorAll(".mini-media img"));
-    const startIdx = Math.max(
-      0,
-      imgs.findIndex((i) => i.classList.contains("is-active"))
-    );
+    const startIdx = Math.max(0, imgs.findIndex((i) => i.classList.contains("is-active")));
     setMiniActive(card, startIdx);
 
     const media = card.querySelector(".mini-media");
@@ -354,52 +326,46 @@ function initMiniSliders() {
     let startX = 0;
     let dx = 0;
     let tracking = false;
+    let moved = false;
 
-    media.addEventListener(
-      "touchstart",
-      (e) => {
-        if (!e.touches || !e.touches[0]) return;
-        tracking = true;
-        startX = e.touches[0].clientX;
-        dx = 0;
-      },
-      { passive: true }
-    );
+    media.addEventListener("touchstart", (e) => {
+      if (!e.touches || !e.touches[0]) return;
+      tracking = true;
+      moved = false;
+      startX = e.touches[0].clientX;
+      dx = 0;
+    }, { passive: true });
 
-    // passive:false so preventDefault works
-    media.addEventListener(
-      "touchmove",
-      (e) => {
-        if (!tracking || !e.touches || !e.touches[0]) return;
-        e.preventDefault();
-        dx = e.touches[0].clientX - startX;
-      },
-      { passive: false }
-    );
+    media.addEventListener("touchmove", (e) => {
+      if (!tracking || !e.touches || !e.touches[0]) return;
+      dx = e.touches[0].clientX - startX;
+      if (Math.abs(dx) > 8) moved = true;
+      e.preventDefault();
+    }, { passive: false });
 
-    media.addEventListener(
-      "touchend",
-      () => {
-        if (!tracking) return;
-        tracking = false;
+    media.addEventListener("touchend", () => {
+      if (!tracking) return;
+      tracking = false;
 
-        if (Math.abs(dx) < 35) return;
-
+      // swipe
+      if (Math.abs(dx) >= 35) {
         const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
         if (dx < 0) setMiniActive(card, cur + 1);
         else setMiniActive(card, cur - 1);
-      },
-      { passive: true }
-    );
+        return;
+      }
 
-    media.addEventListener(
-      "touchcancel",
-      () => {
-        tracking = false;
-        dx = 0;
-      },
-      { passive: true }
-    );
+      // tap (open active product link)
+      if (!moved) {
+        const { url } = getActiveVariantAndUrl(card);
+        if (url && url !== "#") window.open(url, "_blank");
+      }
+    }, { passive: true });
+
+    media.addEventListener("touchcancel", () => {
+      tracking = false;
+      dx = 0;
+    }, { passive: true });
   });
 }
 
