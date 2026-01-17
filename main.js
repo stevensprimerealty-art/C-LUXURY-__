@@ -292,18 +292,16 @@ if (arrivalsCarousel) {
     autoScrollTimer = setInterval(() => {
       const maxScroll = arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
 
+      // ✅ STOP at the end (NO loop back)
       if (arrivalsCarousel.scrollLeft >= maxScroll - 10) {
-        arrivalsCarousel.style.scrollBehavior = "auto";
-        arrivalsCarousel.scrollLeft = 0;
-        requestAnimationFrame(() => {
-          arrivalsCarousel.style.scrollBehavior = "smooth";
-        });
-      } else {
-        arrivalsCarousel.scrollBy({
-          left: Math.max(280, arrivalsCarousel.clientWidth * 0.9),
-          behavior: "smooth"
-        });
+        stopAutoScroll();
+        return;
       }
+
+      arrivalsCarousel.scrollBy({
+        left: Math.max(280, arrivalsCarousel.clientWidth * 0.9),
+        behavior: "smooth"
+      });
     }, AUTO_SCROLL_DELAY);
   }
 
@@ -367,49 +365,63 @@ function initMiniSliders() {
     let moved = false;
 
     media.addEventListener("touchstart", (e) => {
-      if (!e.touches || !e.touches[0]) return;
-      tracking = true;
-      moved = false;
-      startX = e.touches[0].clientX;
-      dx = 0;
-    }, { passive: true });
+  if (!e.touches || !e.touches[0]) return;
 
-    media.addEventListener("touchmove", (e) => {
-      if (!tracking || !e.touches || !e.touches[0]) return;
-      dx = e.touches[0].clientX - startX;
+  // ✅ if overlay is open, close it when user starts swiping
+  card.classList.remove("is-open");
+  card.classList.remove("is-swiping");
 
-      // if user is swiping horizontally, stop page from scrolling
-      if (Math.abs(dx) > 12) {
-        moved = true;
-        e.preventDefault();
-      }
-    }, { passive: false });
+  tracking = true;
+  moved = false;
+  startX = e.touches[0].clientX;
+  dx = 0;
+}, { passive: true });
 
-    media.addEventListener("touchend", () => {
-      if (!tracking) return;
-      tracking = false;
+media.addEventListener("touchmove", (e) => {
+  if (!tracking || !e.touches || !e.touches[0]) return;
+  dx = e.touches[0].clientX - startX;
 
-      // swipe changes mini image
-      if (Math.abs(dx) >= 35) {
-        // ✅ IMPORTANT: prevent iOS “ghost click” after swipe
-        card.dataset.suppressClick = "1";
+  if (Math.abs(dx) > 12) {
+    moved = true;
 
-        const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
-        if (dx < 0) setMiniActive(card, cur + 1);
-        else setMiniActive(card, cur - 1);
-        return;
-      }
+    // ✅ while swiping, NEVER show overlay options
+    card.classList.add("is-swiping");
 
-      // tap image opens overlay options (NOT product page)
-      if (!moved) openOverlay(card);
-    }, { passive: true });
+    e.preventDefault();
+  }
+}, { passive: false });
 
-    media.addEventListener("touchcancel", () => {
-      tracking = false;
-      dx = 0;
-      moved = false;
-    }, { passive: true });
-  });
-}
+media.addEventListener("touchend", () => {
+  if (!tracking) return;
+  tracking = false;
+
+  // swipe changes mini image
+  if (Math.abs(dx) >= 35) {
+    // ✅ prevent iOS ghost click after swipe
+    card.dataset.suppressClick = "1";
+
+    const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
+    if (dx < 0) setMiniActive(card, cur + 1);
+    else setMiniActive(card, cur - 1);
+
+    // ✅ remove swiping lock shortly after swipe ends
+    setTimeout(() => card.classList.remove("is-swiping"), 120);
+    return;
+  }
+
+  // tap image opens overlay options
+  card.classList.remove("is-swiping");
+  if (!moved) openOverlay(card);
+}, { passive: true });
+
+media.addEventListener("touchcancel", () => {
+  tracking = false;
+  dx = 0;
+  moved = false;
+  card.classList.remove("is-swiping");
+}, { passive: true });
+
+  }); // ✅ closes cards.forEach((card)=>{ ... })
+}     // ✅ closes function initMiniSliders()
 
 initMiniSliders();
