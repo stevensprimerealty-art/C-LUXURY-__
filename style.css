@@ -5,6 +5,8 @@
    - Hero stays full-screen clean (100vh minus header)
    - Wishlist cards are PORTRAIT like your reference
    - Wishlist swipe is SMOOTH + continuous on iPhone (native scroll)
+   - Mini-slider images are NOT affected by .product img rule ✅
+   - BUY NOW chip hides when overlay is open ✅
    ============================= */
 
 *{margin:0;padding:0;box-sizing:border-box}
@@ -182,10 +184,10 @@ body{
    WISHLIST — PORTRAIT + SMOOTH CONTINUOUS SWIPE (native)
    ===================================================== */
 .wishlist-slider{
-  overflow-x:auto;                /* ✅ native horizontal scroll */
+  overflow-x:auto;
   overflow-y:hidden;
-  -webkit-overflow-scrolling:touch; /* ✅ iPhone momentum */
-  scroll-snap-type:x mandatory;   /* ✅ snaps nicely */
+  -webkit-overflow-scrolling:touch;
+  scroll-snap-type:x mandatory;
   border-radius:var(--radius);
   user-select:none;
   padding-bottom:8px;
@@ -198,19 +200,17 @@ body{
   padding:2px 0 6px;
 }
 
-/* portrait card like your reference */
 .wishlist-track .card{flex:0 0 auto; scroll-snap-align:start}
 
 .card{
-  width:min(78vw, 340px);         /* big on mobile, capped */
-  aspect-ratio:3/4;               /* ✅ portrait */
+  width:min(78vw, 340px);
+  aspect-ratio:3/4;
   border-radius:22px;
   background:#0f0f0f;
   position:relative;
   overflow:hidden;
 }
 
-/* fill clean; keep top text visible */
 .card img{
   position:absolute;
   inset:0;
@@ -241,10 +241,17 @@ body{
 }
 .products::-webkit-scrollbar{height:0}
 .product{position:relative;min-width:240px;scroll-snap-align:start}
-.product img{
-  width:100%;height:290px;object-fit:cover;border-radius:var(--radius);
-  display:block;filter:contrast(1.02) brightness(.98);
+
+/* ✅ FIX: only style direct product images, NOT mini-media images */
+.product > img{
+  width:100%;
+  height:290px;
+  object-fit:cover;
+  border-radius:var(--radius);
+  display:block;
+  filter:contrast(1.02) brightness(.98);
 }
+
 .product.placeholder .ph-img{
   width:100%;height:290px;border-radius:var(--radius);background:#0f0f0f;
   display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.75);
@@ -260,6 +267,9 @@ body{
   background:rgba(0,0,0,.35);backdrop-filter:blur(12px);
   color:var(--white);letter-spacing:1px;font-size:11px;cursor:pointer;
 }
+
+/* ✅ FIX: hide chip when overlay open */
+.product.is-open .buy-chip{opacity:0;pointer-events:none}
 
 .overlay{
   position:absolute;inset:0;border-radius:var(--radius);
@@ -307,10 +317,9 @@ body{
   .section-title{font-size:15px}
 
   .product{min-width:300px}
-  .product img,
+  .product > img,
   .product.placeholder .ph-img{height:360px}
 
-  /* ✅ ADD THIS */
   .arrivals-card .mini-media{
     height:360px;
   }
@@ -320,13 +329,12 @@ body{
    MINI SLIDER (C-NEW ARRIVALS)
    - show only 1 image
    - cinematic fade between images
-   - keep arrows on top
    ============================= */
 
 .arrivals-card .mini-media{
   position: relative;
   width: 100%;
-  height: 290px;              /* match your product image height */
+  height: 290px;
   border-radius: var(--radius);
   overflow: hidden;
   touch-action: pan-y;
@@ -342,13 +350,11 @@ body{
   height: 100%;
   object-fit: cover;
   border-radius: var(--radius);
-
   opacity: 0;
-  transition: opacity .45s ease;   /* cinematic fade */
+  transition: opacity .45s ease;
   pointer-events: none;
 }
 
-/* active image */
 .arrivals-card .mini-media img.is-active{
   opacity: 1;
   pointer-events: auto;
