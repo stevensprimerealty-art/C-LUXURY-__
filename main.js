@@ -1,15 +1,16 @@
 /* =============================
    C-LUXURY — FINAL main.js (COPY/PASTE)
-   - Menu / Cart stable
-   - Hero slider + rings stable
-   - Product overlay + add-to-cart stable
-   - Wishlist uses NATIVE scroll (CSS handles smooth touch)
-   - C-NEW ARRIVALS: main auto-scroll (4.5s) + mini slider (tap/swipe + fade)
+   FIXES:
+   - Mini slider swipe works on iPhone (prevents page scroll)
+   - Product image tap goes to ACTIVE product link
+   - Swift Buy goes to CHECKOUT (adds active variant first)
+   - Arrivals auto-scroll loops smoothly (no ugly jump)
    ============================= */
 
 const SHOPIFY = {
   domain: "https://mrcharliestxs.myshopify.com",
   cartUrl: "https://mrcharliestxs.myshopify.com/cart",
+  checkoutUrl: "https://mrcharliestxs.myshopify.com/checkout",
   cartAddPermalink: (variantId, qty = 1) =>
     `https://mrcharliestxs.myshopify.com/cart/add?id=${encodeURIComponent(
       variantId
@@ -43,8 +44,7 @@ function closeMenuFn() {
   if (
     backdrop &&
     (!cartDrawer || cartDrawer.getAttribute("aria-hidden") !== "false")
-  )
-    backdrop.hidden = true;
+  ) backdrop.hidden = true;
 }
 if (menuBtn) menuBtn.addEventListener("click", openMenu);
 if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
@@ -139,20 +139,37 @@ function restartTimer() {
 buildRings();
 restartTimer();
 
-// ===== Product overlay tap + add to cart
+// ===== Helpers
+function addToCartViaIframe(variantId) {
+  return new Promise((resolve) => {
+    const iframe = document.createElement("iframe");
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    iframe.style.position = "absolute";
+    iframe.style.left = "-9999px";
+    iframe.src = SHOPIFY.cartAddPermalink(variantId, 1);
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        iframe.remove();
+        resolve();
+      }, 450);
+    };
+
+    document.body.appendChild(iframe);
+  });
+}
+
+// ===== Product overlay tap + open overlay
 const products = Array.from(document.querySelectorAll(".product"));
+
 products.forEach((p) => {
   p.addEventListener("click", (e) => {
     const el = e.target;
 
-    // IMPORTANT: don't toggle overlay when clicking mini-nav arrows
-    if (
-      el.closest("a") ||
-      el.closest("button.addToCart") ||
-      el.classList.contains("buy-chip") ||
-      el.closest(".mini-nav")
-    )
-      return;
+    // don't toggle overlay if clicking links/buttons
+    if (el.closest("a") || el.closest("button")) return;
 
     const isOpen = p.classList.contains("is-open");
     products.forEach((x) => x.classList.remove("is-open"));
@@ -169,31 +186,13 @@ products.forEach((p) => {
     });
   }
 });
+
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".product"))
     products.forEach((x) => x.classList.remove("is-open"));
 });
 
-function addToCartViaIframe(variantId) {
-  return new Promise((resolve) => {
-    const iframe = document.createElement("iframe");
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    iframe.style.position = "absolute";
-    iframe.style.left = "-9999px";
-    iframe.src = SHOPIFY.cartAddPermalink(variantId, 1);
-
-    iframe.onload = () => {
-      setTimeout(() => {
-        iframe.remove();
-        resolve();
-      }, 400);
-    };
-    document.body.appendChild(iframe);
-  });
-}
-
+// ===== ADD TO CART button
 document.querySelectorAll(".addToCart").forEach((btn) => {
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -218,15 +217,43 @@ document.querySelectorAll(".addToCart").forEach((btn) => {
   });
 });
 
-// ✅ Wishlist: NO JS drag / NO transform / NO cloning
-// CSS handles native smooth horizontal scroll on iPhone.
+// ===== SWIFT BUY (go to checkout, not image link)
+document.querySelectorAll("a.swift").forEach((a) => {
+  a.addEventListener("click", async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-/* ================= MAIN ARRIVALS AUTO SCROLL (every 4.5s) ================= */
+    const card = a.closest(".arrivals-card");
+    if (!card) return;
+
+    const activeImg = card.querySelector(".mini-media img.is-active");
+    const variantId =
+      (activeImg && activeImg.getAttribute("data-variant")) ||
+      card.querySelector("button.addToCart")?.getAttribute("data-variant");
+
+    if (!variantId) {
+      window.open(SHOPIFY.checkoutUrl, "_blank");
+      return;
+    }
+
+    a.textContent = "LOADING…";
+
+    await addToCartViaIframe(variantId);
+
+    a.textContent = "SWIFT BUY";
+    window.open(SHOPIFY.checkoutUrl, "_blank");
+  });
+});
+
+// ✅ Wishlist is CSS-native scroll only (no JS)
+
+// ================= MAIN ARRIVALS AUTO SCROLL (4.5s) =================
 const arrivalsCarousel = document.getElementById("arrivalsCarousel");
 
 if (arrivalsCarousel) {
   let autoScrollTimer = null;
   const AUTO_SCROLL_DELAY = 4500;
+  let isAutoJumping = false;
 
   function stopAutoScroll() {
     if (autoScrollTimer) clearInterval(autoScrollTimer);
@@ -236,11 +263,16 @@ if (arrivalsCarousel) {
   function startAutoScroll() {
     stopAutoScroll();
     autoScrollTimer = setInterval(() => {
+      if (isAutoJumping) return;
+
       const maxScroll =
         arrivalsCarousel.scrollWidth - arrivalsCarousel.clientWidth;
 
-      if (arrivalsCarousel.scrollLeft >= maxScroll - 5) {
+      // if near the end -> smooth back to start, then unlock
+      if (arrivalsCarousel.scrollLeft >= maxScroll - 10) {
+        isAutoJumping = true;
         arrivalsCarousel.scrollTo({ left: 0, behavior: "smooth" });
+        setTimeout(() => (isAutoJumping = false), 700);
       } else {
         arrivalsCarousel.scrollBy({
           left: Math.max(280, arrivalsCarousel.clientWidth * 0.9),
@@ -254,7 +286,7 @@ if (arrivalsCarousel) {
     arrivalsCarousel.addEventListener(evt, stopAutoScroll, { passive: true });
   });
 
-  ["touchend", "mouseup", "pointerup"].forEach((evt) => {
+  ["touchend", "touchcancel", "mouseup", "pointerup"].forEach((evt) => {
     arrivalsCarousel.addEventListener(
       evt,
       () => setTimeout(startAutoScroll, 1200),
@@ -265,12 +297,7 @@ if (arrivalsCarousel) {
   startAutoScroll();
 }
 
-/* ================= MINI SLIDER INSIDE EACH CARD (3 images) =================
-   - tap ‹ / ›
-   - swipe left/right
-   - fades to next image
-   - updates name/price + swift url + add-to-cart variant
-*/
+// ================= MINI SLIDER (SWIPE ONLY) =================
 function setMiniActive(card, newIndex) {
   const media = card.querySelector(".mini-media");
   if (!media) return;
@@ -284,21 +311,23 @@ function setMiniActive(card, newIndex) {
   imgs.forEach((im) => im.classList.remove("is-active"));
   imgs[idx].classList.add("is-active");
 
-  // Update meta + links from data- attributes
   const active = imgs[idx];
   const name = active.getAttribute("data-name") || "";
   const price = active.getAttribute("data-price") || "";
   const url = active.getAttribute("data-url") || "#";
   const variant = active.getAttribute("data-variant") || "";
 
+  // update meta text
   const nameEl = card.querySelector(".p-name");
   const priceEl = card.querySelector(".p-price");
   if (nameEl) nameEl.textContent = name.toUpperCase();
   if (priceEl) priceEl.textContent = price;
 
-  const swift = card.querySelector("a.swift");
-  if (swift) swift.href = url;
+  // update product tap link (image click)
+  const productLink = card.querySelector("a.productLink");
+  if (productLink) productLink.href = url;
 
+  // update add-to-cart variant
   const addBtn = card.querySelector("button.addToCart");
   if (addBtn && variant) addBtn.setAttribute("data-variant", variant);
 
@@ -307,8 +336,8 @@ function setMiniActive(card, newIndex) {
 
 function initMiniSliders() {
   const cards = Array.from(document.querySelectorAll(".arrivals-card"));
+
   cards.forEach((card) => {
-    // init index = active img
     const imgs = Array.from(card.querySelectorAll(".mini-media img"));
     const startIdx = Math.max(
       0,
@@ -316,29 +345,11 @@ function initMiniSliders() {
     );
     setMiniActive(card, startIdx);
 
-    const prevBtn = card.querySelector(".mini-nav.prev");
-    const nextBtn = card.querySelector(".mini-nav.next");
-
-    const getIndex = () => parseInt(card.dataset.miniIndex || "0", 10) || 0;
-
-    if (prevBtn) {
-      prevBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setMiniActive(card, getIndex() - 1);
-      });
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setMiniActive(card, getIndex() + 1);
-      });
-    }
-
-    // Swipe support
     const media = card.querySelector(".mini-media");
     if (!media) return;
+
+    // iPhone swipe fix
+    media.style.touchAction = "pan-y";
 
     let startX = 0;
     let dx = 0;
@@ -355,13 +366,15 @@ function initMiniSliders() {
       { passive: true }
     );
 
+    // passive:false so preventDefault works
     media.addEventListener(
       "touchmove",
       (e) => {
         if (!tracking || !e.touches || !e.touches[0]) return;
+        e.preventDefault();
         dx = e.touches[0].clientX - startX;
       },
-      { passive: true }
+      { passive: false }
     );
 
     media.addEventListener(
@@ -369,9 +382,21 @@ function initMiniSliders() {
       () => {
         if (!tracking) return;
         tracking = false;
+
         if (Math.abs(dx) < 35) return;
-        if (dx < 0) setMiniActive(card, getIndex() + 1);
-        else setMiniActive(card, getIndex() - 1);
+
+        const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
+        if (dx < 0) setMiniActive(card, cur + 1);
+        else setMiniActive(card, cur - 1);
+      },
+      { passive: true }
+    );
+
+    media.addEventListener(
+      "touchcancel",
+      () => {
+        tracking = false;
+        dx = 0;
       },
       { passive: true }
     );
