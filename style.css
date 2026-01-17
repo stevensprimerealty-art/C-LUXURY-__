@@ -307,5 +307,64 @@ body{
   .section-title{font-size:15px}
 
   .product{min-width:300px}
-  .product img,.product.placeholder .ph-img{height:360px}
+  .product img,
+  .product.placeholder .ph-img{height:360px}
+
+  /* ✅ ADD THIS */
+  .arrivals-card .mini-media{
+    height:360px;
+  }
 }
+
+/* =============================
+   MINI SLIDER (C-NEW ARRIVALS)
+   - show only 1 image
+   - cinematic fade between images
+   - keep arrows on top
+   ============================= */
+
+.arrivals-card .mini-media{
+  position: relative;
+  width: 100%;
+  height: 290px;              /* match your product image height */
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.arrivals-card .mini-media img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+
+  opacity: 0;
+  transition: opacity .45s ease;   /* cinematic fade */
+  pointer-events: none;
+}
+
+/* active image */
+.arrivals-card .mini-media img.is-active{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* arrows */
+.arrivals-card .mini-nav{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  z-index: 5;
+}
+
+.arrivals-card .mini-nav.prev{ left: 10px; }
+.arrivals-card .mini-nav.next{ right: 10px; }
+
