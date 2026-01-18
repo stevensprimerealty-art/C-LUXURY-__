@@ -382,3 +382,59 @@ body{
 .overlay{
   display:none !important;
 }
+
+/* =========================================
+   C-NEW ARRIVALS + C-NEW PICKS
+   Make every product card the SAME size
+   ========================================= */
+
+.products{
+  align-items: stretch;
+}
+
+.product{
+  flex: 0 0 260px;
+  width: 260px;
+  height: 430px;
+  display: flex;
+  flex-direction: column;
+}
+
+.arrivals-card .mini-media{
+  height: 290px;
+}
+
+.p-meta{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.p-name{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.p-price{
+  margin-top: auto;
+}
+
+@media (max-width: 480px){
+  .product{
+    flex: 0 0 78%;
+    width: 78%;
+    height: 460px;
+  }
+  .arrivals-card .mini-media{
+    height: 310px;
+  }
+}
+
+.arrivals-card .mini-media img{
+  object-position: 50% 20%;
+}
+
+
