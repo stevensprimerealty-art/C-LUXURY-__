@@ -424,17 +424,37 @@ body{
 
 @media (max-width: 480px){
   .product{
+    position: relative;
+    scroll-snap-align: start;
+
     flex: 0 0 78%;
     width: 78%;
     height: 460px;
+
+    display: flex;
+    flex-direction: column;
   }
+
   .arrivals-card .mini-media{
     height: 310px;
   }
 }
 
-.arrivals-card .mini-media img{
-  object-position: 50% 20%;
-}
+@media (min-width: 900px){
+  .product{
+    position: relative;
+    scroll-snap-align: start;
 
+    flex: 0 0 300px;
+    width: 300px;
+    height: 520px;
+
+    display: flex;
+    flex-direction: column;
+  }
+
+  .arrivals-card .mini-media{
+    height: 360px;
+  }
+}
 
