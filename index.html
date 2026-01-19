@@ -13,6 +13,17 @@
 <header class="header">
   <div class="logo-spray">C-LUXURY</div>
 
+  <!-- Currency box -->
+<button class="icon-btn currency-btn" id="currencyBtn" type="button" aria-label="Currency">
+  <span class="currency-top" id="currencyLabel">USD/NGN</span>
+  <span class="currency-bottom" id="currencyRate">—</span>
+</button>
+
+<!-- Chat box -->
+<button class="icon-btn chat-btn" id="chatBtn" type="button" aria-label="Chat">
+  💬
+</button>
+
   <div class="header-icons">
     <a class="icon-link" href="https://mrcharliestxs.myshopify.com/search" aria-label="Search">
       <svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true">
@@ -673,7 +684,39 @@
     
   </div>
 </section>
-  
-<script src="main.js?v=7"></script>
-</body>
+
+    <!-- =========================
+     CINEMATIC BANNER (AUTO FADE)
+     ========================= -->
+<section class="cine-banner" id="cineBanner" aria-label="C-LUXURY cinematic banner">
+  <div class="cine-slide is-active" style="background-image:url('./images/banner1.jpg')"></div>
+  <div class="cine-slide" style="background-image:url('./images/banner2.jpg')"></div>
+  <div class="cine-slide" style="background-image:url('./images/banner3.jpg')"></div>
+
+  <div class="cine-overlay">
+    <p class="cine-text is-show" id="cineText">A new standard of streetwear</p>
+    <div class="cine-dots" id="cineDots" aria-label="Banner navigation"></div>
+  </div>
+</section>
+
+<!-- =========================
+     AI CHAT PANEL
+     ========================= -->
+<div class="chat-panel" id="chatPanel" aria-hidden="true">
+  <div class="chat-head">
+    <div class="chat-title">AI Assistance</div>
+    <button class="chat-close" id="chatClose" type="button" aria-label="Close chat">✕</button>
+  </div>
+
+  <div class="chat-body" id="chatBody">
+    <div class="chat-bubble bot">How can we assist you today?</div>
+  </div>
+
+  <form class="chat-form" id="chatForm">
+    <input class="chat-input" id="chatInput" type="text" placeholder="Type your message…" autocomplete="off" />
+    <button class="chat-send" type="submit">Send</button>
+  </form>
+</div>
+    
+<script src="main.js?v=8"></script>
 </html>
