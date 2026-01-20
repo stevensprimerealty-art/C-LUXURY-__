@@ -1,5 +1,4 @@
 alert("main.js loaded ✅");
-
 /* =============================
    C-LUXURY — FINAL main.js (v9)
    - Currency toggles USD <-> NGN and updates ALL prices
