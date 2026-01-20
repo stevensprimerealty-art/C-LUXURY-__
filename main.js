@@ -413,19 +413,24 @@ function renderCurrencyPill() {
 
 async function fetchUsdToNgn() {
   try {
-    // source 1
-    const r1 = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
-    const j1 = await r1.json();
-    if (j1?.rates?.NGN) {
-      usdToNgn = Number(j1.rates.NGN);
+    // ✅ Best CORS-friendly source (works on GitHub Pages)
+    const r = await fetch(
+      "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json",
+      { cache: "no-store" }
+    );
+    const j = await r.json();
+
+    if (j?.usd?.ngn) {
+      usdToNgn = Number(j.usd.ngn);
       renderCurrencyPill();
       applyCurrencyEverywhere();
       return;
     }
 
-    // fallback
-    const r2 = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=NGN", { cache: "no-store" });
+    // fallback 2
+    const r2 = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
     const j2 = await r2.json();
+
     if (j2?.rates?.NGN) {
       usdToNgn = Number(j2.rates.NGN);
       renderCurrencyPill();
@@ -435,6 +440,7 @@ async function fetchUsdToNgn() {
 
     throw new Error("No NGN rate");
   } catch (e) {
+    usdToNgn = null;
     if (currencyRateEl) currencyRateEl.textContent = "—";
   }
 }
@@ -584,5 +590,6 @@ function restartCine(){
 
 if (cineBanner && cineSlides.length){
   buildCineDots();
+  goToCine(0, false);     // ✅ force first state (fade-ready)
   restartCine();
 }
