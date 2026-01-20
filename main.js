@@ -1,12 +1,16 @@
 /* =============================
-   C-LUXURY — FINAL main.js (COPY/PASTE)
+   C-LUXURY — FINAL main.js (FULL COPY/PASTE)
    RULES YOU WANTED:
    - Mini slider: swipe only (no options while swiping)
    - Product options open ONLY when tapping BUY NOW chip
    - Options are BELOW the card (.actions-panel)
    - No arrivals auto-scroll
+   - Cinematic banner auto-fade (3.3s) + text fades too
+   - Currency auto-update (USD/NGN + toggle to NGN/USD on tap)
+   - AI chat box (💬) opens panel + closes product actions
    ============================= */
 
+/* ---------- Shopify helpers ---------- */
 const SHOPIFY = {
   domain: "https://mrcharliestxs.myshopify.com",
   cartUrl: "https://mrcharliestxs.myshopify.com/cart",
@@ -17,7 +21,7 @@ const SHOPIFY = {
     )}&quantity=${encodeURIComponent(qty)}`
 };
 
-// ===== Elements
+/* ---------- Elements ---------- */
 const menuBtn = document.getElementById("menuBtn");
 const menu = document.getElementById("menu");
 const closeMenu = document.getElementById("closeMenu");
@@ -30,9 +34,9 @@ const cartFrame = document.getElementById("cartFrame");
 
 const heroText = document.getElementById("heroText");
 const ringsWrap = document.getElementById("rings");
-const slides = Array.from(document.querySelectorAll(".hero-slide"));
+const heroSlides = Array.from(document.querySelectorAll(".hero-slide"));
 
-// ===== Menu
+/* ---------- Menu ---------- */
 function openMenu() {
   if (!menu || !backdrop) return;
   menu.setAttribute("aria-hidden", "false");
@@ -51,7 +55,7 @@ function closeMenuFn() {
 if (menuBtn) menuBtn.addEventListener("click", openMenu);
 if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
 
-// ===== Cart
+/* ---------- Cart ---------- */
 function openCart() {
   if (!cartDrawer || !backdrop) return;
   cartDrawer.setAttribute("aria-hidden", "false");
@@ -68,44 +72,45 @@ function closeCart() {
 if (cartBtn) cartBtn.addEventListener("click", openCart);
 if (cartClose) cartClose.addEventListener("click", closeCart);
 
+/* ---------- Backdrop + ESC ---------- */
 if (backdrop) {
   backdrop.addEventListener("click", () => {
     closeMenuFn();
     closeCart();
-    closeAllActions();
+    if (typeof closeAllActions === "function") closeAllActions();
   });
 }
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeMenuFn();
     closeCart();
-    closeAllActions();
+    if (typeof closeAllActions === "function") closeAllActions();
   }
 });
 
-// ===== Hero slider + rings (keep)
-const texts = [
+/* ---------- Hero slider + rings ---------- */
+const heroTexts = [
   "A NEW YEAR<br>WITH PRESENCE",
   "SILENCE<br>CONNOTES NOISE",
   "LUXURY<br>WITHOUT NOISE",
   "PRESENCE<br>WITHOUT NOISE",
   "SILENCE IS POWER",
   "LUXURY<br>WITHOUT NOISE"
-].slice(0, slides.length);
+].slice(0, heroSlides.length);
 
-const INTERVAL = 4300;
-let index = 0;
-let timer = null;
+const HERO_INTERVAL = 4300;
+let heroIndex = 0;
+let heroTimer = null;
 
 function buildRings() {
-  if (!ringsWrap || !slides.length) return;
+  if (!ringsWrap || !heroSlides.length) return;
   ringsWrap.innerHTML = "";
-  slides.forEach((_, i) => {
+  heroSlides.forEach((_, i) => {
     const b = document.createElement("button");
     b.className = "ring" + (i === 0 ? " is-active" : "");
     b.type = "button";
     b.setAttribute("aria-label", `Go to slide ${i + 1}`);
-    b.addEventListener("click", () => goToSlide(i, true));
+    b.addEventListener("click", () => goToHero(i, true));
     ringsWrap.appendChild(b);
   });
 }
@@ -115,35 +120,37 @@ function setActiveRing(i) {
   all.forEach((r) => r.classList.remove("is-active"));
   if (all[i]) all[i].classList.add("is-active");
 }
-function goToSlide(i, resetTimer = false) {
-  if (!slides.length) return;
+function goToHero(i, resetTimer = false) {
+  if (!heroSlides.length) return;
 
   if (heroText) heroText.classList.add("fadeout");
 
   setTimeout(() => {
-    slides.forEach((s) => s.classList.remove("active"));
-    slides[i].classList.add("active");
+    heroSlides.forEach((s) => s.classList.remove("active"));
+    heroSlides[i].classList.add("active");
+
     if (heroText) {
-      heroText.innerHTML = texts[i] || "";
+      heroText.innerHTML = heroTexts[i] || "";
       heroText.classList.remove("fadeout");
     }
+
     setActiveRing(i);
-    index = i;
+    heroIndex = i;
   }, 220);
 
-  if (resetTimer) restartTimer();
+  if (resetTimer) restartHeroTimer();
 }
-function nextSlide() {
-  goToSlide((index + 1) % slides.length, false);
+function nextHero() {
+  goToHero((heroIndex + 1) % heroSlides.length, false);
 }
-function restartTimer() {
-  if (timer) clearInterval(timer);
-  timer = setInterval(nextSlide, INTERVAL);
+function restartHeroTimer() {
+  if (heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(nextHero, HERO_INTERVAL);
 }
 buildRings();
-restartTimer();
+restartHeroTimer();
 
-// ===== Helpers
+/* ---------- Helpers ---------- */
 function addToCartViaIframe(variantId) {
   return new Promise((resolve) => {
     const iframe = document.createElement("iframe");
@@ -173,13 +180,11 @@ function getActiveVariantAndUrl(card) {
 
 function syncActionLinks(card) {
   const { url } = getActiveVariantAndUrl(card);
-
-  // ✅ matches your HTML container (.actions-panel)
   const buyNow = card.querySelector(".actions-panel a.buyNow");
   if (buyNow) buyNow.href = url && url !== "#" ? url : "#";
 }
 
-// ===== Product actions open ONLY on BUY NOW chip
+/* ---------- Product actions open ONLY on BUY NOW chip ---------- */
 const products = Array.from(document.querySelectorAll(".product"));
 
 function closeAllActions() {
@@ -193,7 +198,6 @@ function openActions(card) {
 }
 
 products.forEach((p) => {
-  // ✅ Only BUY NOW chip opens options
   const chip = p.querySelector(".buy-chip");
   if (chip) {
     chip.addEventListener("click", (e) => {
@@ -203,7 +207,6 @@ products.forEach((p) => {
     });
   }
 
-  // ✅ Stop clicks inside actions panel from closing
   const panel = p.querySelector(".actions-panel");
   if (panel) {
     panel.addEventListener("click", (e) => e.stopPropagation());
@@ -215,7 +218,7 @@ document.addEventListener("click", (e) => {
   if (!e.target.closest(".product")) closeAllActions();
 });
 
-// ===== Add to cart (ACTIVE variant)
+/* ---------- Add to cart (ACTIVE variant) ---------- */
 document.querySelectorAll(".addToCart").forEach((btn) => {
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -243,7 +246,7 @@ document.querySelectorAll(".addToCart").forEach((btn) => {
   });
 });
 
-// ===== Swift Buy (ACTIVE variant -> checkout, SAME TAB)
+/* ---------- Swift Buy (ACTIVE variant -> checkout, SAME TAB) ---------- */
 document.querySelectorAll(".actions-panel a.swift").forEach((a) => {
   a.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -265,14 +268,12 @@ document.querySelectorAll(".actions-panel a.swift").forEach((a) => {
   });
 });
 
-// ===== Buy Now click normal (don’t close instantly)
+/* ---------- Buy Now click normal ---------- */
 document.querySelectorAll(".actions-panel a.buyNow").forEach((a) => {
-  a.addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
+  a.addEventListener("click", (e) => e.stopPropagation());
 });
 
-// ================= MINI SLIDER (SWIPE ONLY) =================
+/* ================= MINI SLIDER (SWIPE ONLY) ================= */
 function setMiniActive(card, newIndex) {
   const media = card.querySelector(".mini-media");
   if (!media) return;
@@ -296,8 +297,6 @@ function setMiniActive(card, newIndex) {
   if (priceEl) priceEl.textContent = price;
 
   card.dataset.miniIndex = String(idx);
-
-  // keep actions Buy Now synced
   syncActionLinks(card);
 }
 
@@ -326,9 +325,7 @@ function initMiniSliders() {
       (e) => {
         if (!e.touches || !e.touches[0]) return;
 
-        // ✅ while swiping, close options
-        card.classList.remove("is-open");
-
+        card.classList.remove("is-open"); // close options while swiping
         tracking = true;
         startX = e.touches[0].clientX;
         dx = 0;
@@ -360,8 +357,7 @@ function initMiniSliders() {
           if (dx < 0) setMiniActive(card, cur + 1);
           else setMiniActive(card, cur - 1);
         }
-
-        // ✅ tap does NOTHING
+        // tap does nothing
       },
       { passive: true }
     );
@@ -376,15 +372,11 @@ function initMiniSliders() {
     );
   });
 }
-
 initMiniSliders();
 
-/* ✅ Arrivals auto-scroll REMOVED بالكامل */
-
-/* =========================================
+/* ==========================================================
    C-LUXURY: Banner + Currency + AI Chat
-   ========================================= */
-
+   ========================================================== */
 document.addEventListener("DOMContentLoaded", () => {
   /* ---------- 1) CINEMATIC BANNER AUTO FADE ---------- */
   const banner = document.getElementById("cineBanner");
@@ -392,134 +384,133 @@ document.addEventListener("DOMContentLoaded", () => {
     const slides = Array.from(banner.querySelectorAll(".cine-slide"));
     const textEl = document.getElementById("cineText");
     const dotsWrap = document.getElementById("cineDots");
-    if (!dotsWrap) return;
 
-    const texts = [
-  "A new standard of streetwear",
-  "Understated, intentional",
-  "Unmistakably bold"
-];
+    if (dotsWrap && slides.length) {
+      const texts = [
+        "A new standard of streetwear",
+        "Understated, intentional",
+        "Unmistakably bold"
+      ];
 
-    let i = 0;
-    let timer = null;
+      let i = 0;
+      let timer = null;
 
-    // build dots
-    dotsWrap.innerHTML = "";
-    slides.forEach((_, idx) => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "cine-dot" + (idx === 0 ? " is-active" : "");
-      b.setAttribute("aria-label", `Banner slide ${idx + 1}`);
-      b.addEventListener("click", () => go(idx, true));
-      dotsWrap.appendChild(b);
-    });
-    const dots = Array.from(dotsWrap.querySelectorAll(".cine-dot"));
+      // build dots
+      dotsWrap.innerHTML = "";
+      slides.forEach((_, idx) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "cine-dot" + (idx === 0 ? " is-active" : "");
+        b.setAttribute("aria-label", `Banner slide ${idx + 1}`);
+        b.addEventListener("click", () => go(idx, true));
+        dotsWrap.appendChild(b);
+      });
 
-    function go(next, userClick=false){
-      slides[i].classList.remove("is-active");
-      dots[i].classList.remove("is-active");
+      const dots = Array.from(dotsWrap.querySelectorAll(".cine-dot"));
 
-      i = next;
+      function go(next, userClick = false) {
+        slides[i].classList.remove("is-active");
+        dots[i].classList.remove("is-active");
 
-      slides[i].classList.add("is-active");
-      dots[i].classList.add("is-active");
+        i = next;
 
-      if (textEl) {
-        textEl.classList.remove("is-show");
-        // small delay for cinematic fade
-        setTimeout(() => {
-          textEl.textContent = texts[i] || texts[0];
+        slides[i].classList.add("is-active");
+        dots[i].classList.add("is-active");
+
+        if (textEl) {
+          textEl.classList.remove("is-show");
+          setTimeout(() => {
+            textEl.textContent = texts[i] || texts[0];
+            textEl.classList.add("is-show");
+          }, 220);
+        }
+
+        if (userClick) restart();
+      }
+
+      function start() {
+        slides.forEach((s, idx) => s.classList.toggle("is-active", idx === 0));
+        dots.forEach((d, idx) => d.classList.toggle("is-active", idx === 0));
+        if (textEl) {
+          textEl.textContent = texts[0];
           textEl.classList.add("is-show");
-        }, 220);
+        }
+        timer = setInterval(() => go((i + 1) % slides.length, false), 3300);
       }
 
-      if (userClick) restart();
-    }
-
-    function start(){
-      if (!slides.length) return;
-      // set first
-      slides.forEach((s, idx) => s.classList.toggle("is-active", idx === 0));
-      dots.forEach((d, idx) => d.classList.toggle("is-active", idx === 0));
-      if (textEl){
-        textEl.textContent = texts[0];
-        textEl.classList.add("is-show");
+      function restart() {
+        clearInterval(timer);
+        timer = setInterval(() => go((i + 1) % slides.length, false), 3300);
       }
-      timer = setInterval(() => {
-        go((i + 1) % slides.length, false);
-      }, 3300);
-    }
 
-    function restart(){
-      clearInterval(timer);
-      timer = setInterval(() => {
-        go((i + 1) % slides.length, false);
-      }, 3300);
+      start();
     }
-
-    start();
   }
 
   /* ---------- 2) CURRENCY AUTO UPDATE (USD/NGN) ---------- */
   const rateEl = document.getElementById("currencyRate");
   const labelEl = document.getElementById("currencyLabel");
-let currencyMode = "USDNGN"; // "USDNGN" or "NGNUSD"
-let lastUsdToNgn = null;
+  const currencyBtn = document.getElementById("currencyBtn");
 
-const currencyBtn = document.getElementById("currencyBtn");
+  let currencyMode = "USDNGN"; // "USDNGN" or "NGNUSD"
+  let lastUsdToNgn = null;
 
-function renderRate() {
-  if (!rateEl || !labelEl || !lastUsdToNgn) return;
+  function renderRate() {
+    if (!rateEl || !labelEl || !lastUsdToNgn) return;
 
-  if (currencyMode === "USDNGN") {
-    labelEl.textContent = "USD/NGN";
-    rateEl.textContent = lastUsdToNgn.toFixed(2);
-  } else {
-    labelEl.textContent = "NGN/USD";
-    rateEl.textContent = (1 / lastUsdToNgn).toFixed(6);
-  }
-}
-
-currencyBtn?.addEventListener("click", () => {
-  currencyMode = currencyMode === "USDNGN" ? "NGNUSD" : "USDNGN";
-  renderRate();
-});
-
-   
-  async function fetchRate(){
-  try{
-    let data;
-
-    // 1) main source
-    try{
-      const res = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
-      data = await res.json();
-    }catch(_){
-      data = null;
+    if (currencyMode === "USDNGN") {
+      labelEl.textContent = "USD/NGN";
+      rateEl.textContent = lastUsdToNgn.toFixed(2);
+    } else {
+      labelEl.textContent = "NGN/USD";
+      rateEl.textContent = (1 / lastUsdToNgn).toFixed(6);
     }
+  }
 
-    // 2) fallback source
-    if (!data?.rates?.NGN){
-      const res2 = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=NGN", { cache: "no-store" });
-      const data2 = await res2.json();
-      const ngn2 = data2?.rates?.NGN;
-      if (!ngn2) throw new Error("NGN rate missing");
-      lastUsdToNgn = Number(ngn2);
+  if (currencyBtn) {
+    currencyBtn.addEventListener("click", () => {
+      currencyMode = currencyMode === "USDNGN" ? "NGNUSD" : "USDNGN";
       renderRate();
-      return;
-    }
-
-    const ngn = data.rates.NGN;
-    lastUsdToNgn = Number(ngn);
-    renderRate();
-
-  }catch(e){
-    if (rateEl) rateEl.textContent = "—";
+    });
   }
-}
-  // first load + auto refresh every 30 minutes
+
+  async function fetchRate() {
+    try {
+      let data = null;
+
+      // 1) main source
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD", {
+          cache: "no-store"
+        });
+        data = await res.json();
+      } catch (_) {
+        data = null;
+      }
+
+      // 2) fallback source
+      if (!data?.rates?.NGN) {
+        const res2 = await fetch(
+          "https://api.exchangerate.host/latest?base=USD&symbols=NGN",
+          { cache: "no-store" }
+        );
+        const data2 = await res2.json();
+        const ngn2 = data2?.rates?.NGN;
+        if (!ngn2) throw new Error("NGN rate missing");
+        lastUsdToNgn = Number(ngn2);
+        renderRate();
+        return;
+      }
+
+      lastUsdToNgn = Number(data.rates.NGN);
+      renderRate();
+    } catch (e) {
+      if (rateEl) rateEl.textContent = "—";
+    }
+  }
+
   fetchRate();
-  setInterval(fetchRate, 30 * 60 * 1000);
+  setInterval(fetchRate, 30 * 60 * 1000); // every 30 minutes
 
   /* ---------- 3) AI CHAT BOX (opens panel) ---------- */
   const chatBtn = document.getElementById("chatBtn");
@@ -529,24 +520,24 @@ currencyBtn?.addEventListener("click", () => {
   const chatInput = document.getElementById("chatInput");
   const chatBody = document.getElementById("chatBody");
 
-  function openChat(){
+  function openChat() {
+    if (typeof closeAllActions === "function") closeAllActions();
     if (!chatPanel) return;
     chatPanel.hidden = false;
     chatPanel.setAttribute("aria-hidden", "false");
     setTimeout(() => chatInput?.focus(), 120);
   }
 
-  function closeChat(){
+  function closeChat() {
     if (!chatPanel) return;
     chatPanel.hidden = true;
     chatPanel.setAttribute("aria-hidden", "true");
   }
 
-  chatBtn?.addEventListener("click", openChat);
-  chatClose?.addEventListener("click", closeChat);
+  if (chatBtn) chatBtn.addEventListener("click", openChat);
+  if (chatClose) chatClose.addEventListener("click", closeChat);
 
-  // helper: add bubble
-  function addBubble(text, who="user"){
+  function addBubble(text, who = "user") {
     if (!chatBody) return;
     const div = document.createElement("div");
     div.className = `chat-bubble ${who}`;
@@ -555,25 +546,24 @@ currencyBtn?.addEventListener("click", () => {
     chatBody.scrollTop = chatBody.scrollHeight;
   }
 
-  // simple AI “fallback” response after 3 seconds (if no human)
   let botTimer = null;
+  function botReplyAfter3s() {
+    if (botTimer) clearTimeout(botTimer);
+    botTimer = setTimeout(() => {
+      addBubble("How can we assist you today?", "bot");
+    }, 3000);
+  }
 
-function botReplyAfter3s(){
-  if (botTimer) clearTimeout(botTimer);
-  botTimer = setTimeout(() => {
-    addBubble("How can we assist you today?", "bot");
-  }, 3000);
-}
+  if (chatForm) {
+    chatForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const msg = (chatInput?.value || "").trim();
+      if (!msg) return;
 
-  chatForm?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const msg = (chatInput?.value || "").trim();
-    if (!msg) return;
+      addBubble(msg, "user");
+      if (chatInput) chatInput.value = "";
 
-    addBubble(msg, "user");
-    chatInput.value = "";
-
-    // for now: AI fallback
-    botReplyAfter3s();
-  });
+      botReplyAfter3s();
+    });
+  }
 });
