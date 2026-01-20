@@ -304,7 +304,11 @@ function initMiniSliders() {
     const media = card.querySelector(".mini-media");
     if (!media) return;
     media.style.touchAction = "pan-y";
-
+     
+    media.style.webkitUserSelect = "none";
+    media.style.userSelect = "none";
+    media.style.webkitTouchCallout = "none";
+     
     let startX = 0;
     let dx = 0;
     let tracking = false;
@@ -512,3 +516,73 @@ chatInput?.addEventListener("keydown", (e) => {
     sendMessage();
   }
 });
+
+/* ==========================================================
+   CINEMATIC BANNER — auto fade + dots + shop button
+   ========================================================== */
+
+const cineBanner = document.getElementById("cineBanner");
+const cineSlides = Array.from(document.querySelectorAll("#cineBanner .cine-slide"));
+const cineText = document.getElementById("cineText");
+const cineDots = document.getElementById("cineDots");
+
+const cineTexts = [
+  "A new standard of streetwear",
+  "Luxury without noise",
+  "Presence without noise"
+].slice(0, cineSlides.length);
+
+let cineIndex = 0;
+let cineTimer = null;
+const CINE_INTERVAL = 4200;
+
+function buildCineDots(){
+  if (!cineDots) return;
+  cineDots.innerHTML = "";
+  cineSlides.forEach((_, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "cine-dot" + (i === 0 ? " is-active" : "");
+    b.setAttribute("aria-label", `Go to banner ${i+1}`);
+    b.addEventListener("click", () => goToCine(i, true));
+    cineDots.appendChild(b);
+  });
+}
+
+function setActiveCineDot(i){
+  if (!cineDots) return;
+  cineDots.querySelectorAll(".cine-dot").forEach(d => d.classList.remove("is-active"));
+  cineDots.querySelectorAll(".cine-dot")[i]?.classList.add("is-active");
+}
+
+function goToCine(i, reset=false){
+  if (!cineSlides.length) return;
+
+  cineSlides.forEach(s => s.classList.remove("is-active"));
+  cineSlides[i].classList.add("is-active");
+
+  if (cineText){
+    cineText.classList.remove("is-show");
+    setTimeout(() => {
+      cineText.textContent = cineTexts[i] || "";
+      cineText.classList.add("is-show");
+    }, 180);
+  }
+
+  setActiveCineDot(i);
+  cineIndex = i;
+
+  if (reset) restartCine();
+}
+
+function restartCine(){
+  if (cineTimer) clearInterval(cineTimer);
+  cineTimer = setInterval(() => {
+    goToCine((cineIndex + 1) % cineSlides.length);
+  }, CINE_INTERVAL);
+}
+
+if (cineBanner && cineSlides.length){
+  buildCineDots();
+  restartCine();
+}
