@@ -87,7 +87,7 @@ backdrop?.addEventListener("click", () => {
   closeMenuFn();
   closeCart();
   closeAllActions();
-  closeChat();
+  if (typeof closeChat === "function") closeChat();
 });
 
 window.addEventListener("keydown", (e) => {
@@ -95,7 +95,7 @@ window.addEventListener("keydown", (e) => {
     closeMenuFn();
     closeCart();
     closeAllActions();
-    closeChat();
+    if (typeof closeChat === "function") closeChat();
   }
 });
 
@@ -370,12 +370,18 @@ function formatMoney(amount, mode) {
 function applyCurrencyToCard(card) {
   if (!card) return;
 
-  const activeImg = card.querySelector(".mini-media img.is-active");
   const priceEl = card.querySelector(".p-price");
-  if (!activeImg || !priceEl) return;
+  if (!priceEl) return;
 
-  const baseUsd = parseUsd(activeImg.getAttribute("data-price") || "");
-  if (!baseUsd) return;
+  // 1) Prefer active mini-media image (your mini slider)
+  const activeImg = card.querySelector(".mini-media img.is-active");
+  let baseUsd = activeImg ? parseUsd(activeImg.getAttribute("data-price") || "") : null;
+
+  // 2) Fallback: read the current text price (ex: "$87.41") if no data-price
+  if (baseUsd === null) {
+    baseUsd = parseUsd(priceEl.textContent || "");
+  }
+  if (baseUsd === null) return;
 
   if (currencyMode === "USD") {
     priceEl.textContent = formatMoney(baseUsd, "USD");
@@ -386,7 +392,7 @@ function applyCurrencyToCard(card) {
 }
 
 function applyCurrencyEverywhere() {
-  document.querySelectorAll(".arrivals-card").forEach((card) => applyCurrencyToCard(card));
+  document.querySelectorAll(".product").forEach((card) => applyCurrencyToCard(card));
 }
 
 function renderCurrencyPill() {
