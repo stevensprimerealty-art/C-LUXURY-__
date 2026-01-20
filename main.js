@@ -380,3 +380,200 @@ function initMiniSliders() {
 initMiniSliders();
 
 /* ✅ Arrivals auto-scroll REMOVED بالكامل */
+
+/* =========================================
+   C-LUXURY: Banner + Currency + AI Chat
+   ========================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  /* ---------- 1) CINEMATIC BANNER AUTO FADE ---------- */
+  const banner = document.getElementById("cineBanner");
+  if (banner) {
+    const slides = Array.from(banner.querySelectorAll(".cine-slide"));
+    const textEl = document.getElementById("cineText");
+    const dotsWrap = document.getElementById("cineDots");
+    if (!dotsWrap) return;
+
+    const texts = [
+  "A new standard of streetwear",
+  "Understated, intentional",
+  "Unmistakably bold"
+];
+
+    let i = 0;
+    let timer = null;
+
+    // build dots
+    dotsWrap.innerHTML = "";
+    slides.forEach((_, idx) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "cine-dot" + (idx === 0 ? " is-active" : "");
+      b.setAttribute("aria-label", `Banner slide ${idx + 1}`);
+      b.addEventListener("click", () => go(idx, true));
+      dotsWrap.appendChild(b);
+    });
+    const dots = Array.from(dotsWrap.querySelectorAll(".cine-dot"));
+
+    function go(next, userClick=false){
+      slides[i].classList.remove("is-active");
+      dots[i].classList.remove("is-active");
+
+      i = next;
+
+      slides[i].classList.add("is-active");
+      dots[i].classList.add("is-active");
+
+      if (textEl) {
+        textEl.classList.remove("is-show");
+        // small delay for cinematic fade
+        setTimeout(() => {
+          textEl.textContent = texts[i] || texts[0];
+          textEl.classList.add("is-show");
+        }, 220);
+      }
+
+      if (userClick) restart();
+    }
+
+    function start(){
+      if (!slides.length) return;
+      // set first
+      slides.forEach((s, idx) => s.classList.toggle("is-active", idx === 0));
+      dots.forEach((d, idx) => d.classList.toggle("is-active", idx === 0));
+      if (textEl){
+        textEl.textContent = texts[0];
+        textEl.classList.add("is-show");
+      }
+      timer = setInterval(() => {
+        go((i + 1) % slides.length, false);
+      }, 3300);
+    }
+
+    function restart(){
+      clearInterval(timer);
+      timer = setInterval(() => {
+        go((i + 1) % slides.length, false);
+      }, 3300);
+    }
+
+    start();
+  }
+
+  /* ---------- 2) CURRENCY AUTO UPDATE (USD/NGN) ---------- */
+  const rateEl = document.getElementById("currencyRate");
+  const labelEl = document.getElementById("currencyLabel");
+let currencyMode = "USDNGN"; // "USDNGN" or "NGNUSD"
+let lastUsdToNgn = null;
+
+const currencyBtn = document.getElementById("currencyBtn");
+
+function renderRate() {
+  if (!rateEl || !labelEl || !lastUsdToNgn) return;
+
+  if (currencyMode === "USDNGN") {
+    labelEl.textContent = "USD/NGN";
+    rateEl.textContent = lastUsdToNgn.toFixed(2);
+  } else {
+    labelEl.textContent = "NGN/USD";
+    rateEl.textContent = (1 / lastUsdToNgn).toFixed(6);
+  }
+}
+
+currencyBtn?.addEventListener("click", () => {
+  currencyMode = currencyMode === "USDNGN" ? "NGNUSD" : "USDNGN";
+  renderRate();
+});
+
+   
+  async function fetchRate(){
+  try{
+    let data;
+
+    // 1) main source
+    try{
+      const res = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
+      data = await res.json();
+    }catch(_){
+      data = null;
+    }
+
+    // 2) fallback source
+    if (!data?.rates?.NGN){
+      const res2 = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=NGN", { cache: "no-store" });
+      const data2 = await res2.json();
+      const ngn2 = data2?.rates?.NGN;
+      if (!ngn2) throw new Error("NGN rate missing");
+      lastUsdToNgn = Number(ngn2);
+      renderRate();
+      return;
+    }
+
+    const ngn = data.rates.NGN;
+    lastUsdToNgn = Number(ngn);
+    renderRate();
+
+  }catch(e){
+    if (rateEl) rateEl.textContent = "—";
+  }
+}
+  // first load + auto refresh every 30 minutes
+  fetchRate();
+  setInterval(fetchRate, 30 * 60 * 1000);
+
+  /* ---------- 3) AI CHAT BOX (opens panel) ---------- */
+  const chatBtn = document.getElementById("chatBtn");
+  const chatPanel = document.getElementById("chatPanel");
+  const chatClose = document.getElementById("chatClose");
+  const chatForm = document.getElementById("chatForm");
+  const chatInput = document.getElementById("chatInput");
+  const chatBody = document.getElementById("chatBody");
+
+  function openChat(){
+    if (!chatPanel) return;
+    chatPanel.hidden = false;
+    chatPanel.setAttribute("aria-hidden", "false");
+    setTimeout(() => chatInput?.focus(), 120);
+  }
+
+  function closeChat(){
+    if (!chatPanel) return;
+    chatPanel.hidden = true;
+    chatPanel.setAttribute("aria-hidden", "true");
+  }
+
+  chatBtn?.addEventListener("click", openChat);
+  chatClose?.addEventListener("click", closeChat);
+
+  // helper: add bubble
+  function addBubble(text, who="user"){
+    if (!chatBody) return;
+    const div = document.createElement("div");
+    div.className = `chat-bubble ${who}`;
+    div.textContent = text;
+    chatBody.appendChild(div);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  // simple AI “fallback” response after 3 seconds (if no human)
+  let botTimer = null;
+
+function botReplyAfter3s(){
+  if (botTimer) clearTimeout(botTimer);
+  botTimer = setTimeout(() => {
+    addBubble("How can we assist you today?", "bot");
+  }, 3000);
+}
+
+  chatForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const msg = (chatInput?.value || "").trim();
+    if (!msg) return;
+
+    addBubble(msg, "user");
+    chatInput.value = "";
+
+    // for now: AI fallback
+    botReplyAfter3s();
+  });
+});
