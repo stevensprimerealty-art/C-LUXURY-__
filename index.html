@@ -37,17 +37,6 @@
   </div>
 </header>
   
-<div class="utility-bar">
-  <button class="icon-btn currency-btn" id="currencyBtn" type="button">
-    <span class="currency-top" id="currencyLabel">USD/NGN</span>
-    <span class="currency-bottom" id="currencyRate">—</span>
-  </button>
-
-  <button class="icon-btn chat-btn" id="chatBtn" type="button">
-    💬
-  </button>
-</div>
-  
 <div class="menu-overlay" id="menu" aria-hidden="true">
   <button class="close-menu" id="closeMenu" type="button" aria-label="Close Menu">✕</button>
 
@@ -717,7 +706,56 @@
     <button class="chat-send" type="submit">Send</button>
   </form>
 </div>
-    
+
+<!-- =========================
+     BOTTOM STICKY BAR (Currency left, Chat right)
+     ========================= -->
+<div class="bottom-bar" id="bottomBar">
+  <button class="bottom-btn currency-pill" id="currencyBtn" type="button">
+    <span class="pill-top" id="currencyLabel">USD/NGN</span>
+    <span class="pill-bottom" id="currencyRate">—</span>
+  </button>
+
+  <button class="bottom-btn chat-pill" id="chatBtn" type="button" aria-label="Chat with us">
+    <span class="chat-icon">💬</span>
+    <span class="chat-text">Chat with us</span>
+    <span class="chat-dot" aria-hidden="true"></span>
+  </button>
+</div>
+
+<!-- =========================
+     CHAT FULLSCREEN PANEL (like your screenshot)
+     ========================= -->
+<div class="chat-sheet" id="chatPanel" aria-hidden="true" hidden>
+  <div class="chat-sheet-head">
+    <div class="chat-sheet-title">Chat with us</div>
+    <button class="chat-sheet-close" id="chatClose" type="button" aria-label="Close chat">✕</button>
+  </div>
+
+  <div class="chat-sheet-hero">
+    <div class="chat-sheet-hello">👋 Hi, message us with any questions. We’re happy to help!</div>
+    <div class="chat-sheet-inputwrap">
+      <input id="chatInput" class="chat-sheet-input" type="text" placeholder="Write message" autocomplete="off" />
+      <button id="chatSend" class="chat-sheet-send" type="button" aria-label="Send">➤</button>
+    </div>
+  </div>
+
+  <div class="chat-sheet-body">
+    <div class="instant-title">Instant answers</div>
+    <div class="instant-list" id="instantList">
+      <button class="instant-item" type="button">What is your return policy?</button>
+      <button class="instant-item" type="button">Track my order</button>
+      <button class="instant-item" type="button">What is your contact info?</button>
+      <button class="instant-item" type="button">Do you offer international shipping?</button>
+      <button class="instant-item" type="button">Can I pick up my order at your store?</button>
+      <button class="instant-item" type="button">Can you send my order to the UK?</button>
+      <button class="instant-item" type="button">What are your shipping details?</button>
+      <button class="instant-item" type="button">Do you offer same day delivery?</button>
+      <button class="instant-item" type="button">Can you ship to the United States?</button>
+    </div>
+  </div>
+</div>
+  
 <script src="main.js?v=8"></script>
 </body>
 </html>
