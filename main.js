@@ -1,4 +1,19 @@
-alert("main.js loaded ✅");
+// ===== crash catcher (keep) =====
+window.addEventListener("error", (e) => {
+  console.log("JS ERROR:", e.message, e.filename, e.lineno);
+  alert("JS crashed: " + e.message);
+});
+window.addEventListener("unhandledrejection", (e) => {
+  console.log("PROMISE ERROR:", e.reason);
+  alert("Promise crashed: " + (e.reason?.message || e.reason));
+});
+
+// ===== run everything only after DOM is ready =====
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM ready ✅");
+
+  // ⬇️ PASTE YOUR ENTIRE SITE CODE HERE (everything that currently starts at SHOPIFY, menuBtn, etc.)
+
 /* =============================
    C-LUXURY — FINAL main.js (v9)
    - Currency toggles USD <-> NGN and updates ALL prices
@@ -310,39 +325,67 @@ function initMiniSliders() {
     media.style.userSelect = "none";
     media.style.webkitTouchCallout = "none";
      
-    let startX = 0;
-    let dx = 0;
-    let tracking = false;
+let startX = 0;
+let startY = 0;
+let dx = 0;
+let dy = 0;
+let tracking = false;
+let locked = false;
 
-    media.addEventListener("touchstart", (e) => {
-      if (!e.touches?.[0]) return;
-      card.classList.remove("is-open");
-      tracking = true;
-      startX = e.touches[0].clientX;
-      dx = 0;
-    }, { passive: true });
+media.addEventListener("touchstart", (e) => {
+  const t = e.touches && e.touches[0];
+  if (!t) return;
 
-    media.addEventListener("touchmove", (e) => {
-      if (!tracking || !e.touches?.[0]) return;
-      dx = e.touches[0].clientX - startX;
-      if (Math.abs(dx) > 12) e.preventDefault();
-    }, { passive: false });
+  card.classList.remove("is-open");
 
-    media.addEventListener("touchend", () => {
-      if (!tracking) return;
-      tracking = false;
+  tracking = true;
+  locked = false;
+  startX = t.clientX;
+  startY = t.clientY;
+  dx = 0;
+  dy = 0;
+}, { passive: true });
 
-      if (Math.abs(dx) >= 35) {
-        const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
-        if (dx < 0) setMiniActive(card, cur + 1);
-        else setMiniActive(card, cur - 1);
-      }
-    }, { passive: true });
+media.addEventListener("touchmove", (e) => {
+  if (!tracking) return;
+  const t = e.touches && e.touches[0];
+  if (!t) return;
 
-    media.addEventListener("touchcancel", () => {
-      tracking = false;
-      dx = 0;
-    }, { passive: true });
+  dx = t.clientX - startX;
+  dy = t.clientY - startY;
+
+  // Lock intent once the finger moves a bit
+  if (!locked && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+    locked = true;
+  }
+
+  // If this is a horizontal swipe, prevent the parent carousel scroll
+  if (locked && Math.abs(dx) > Math.abs(dy)) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}, { passive: false });
+
+media.addEventListener("touchend", () => {
+  if (!tracking) return;
+  tracking = false;
+
+  // Horizontal swipe threshold
+  if (Math.abs(dx) >= 35 && Math.abs(dx) > Math.abs(dy)) {
+    const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
+    if (dx < 0) setMiniActive(card, cur + 1);
+    else setMiniActive(card, cur - 1);
+  }
+
+  dx = 0;
+  dy = 0;
+}, { passive: true });
+
+media.addEventListener("touchcancel", () => {
+  tracking = false;
+  dx = 0;
+  dy = 0;
+}, { passive: true });
   });
 }
 initMiniSliders();
@@ -594,3 +637,6 @@ if (cineBanner && cineSlides.length){
   goToCine(0, false);     // ✅ force first state (fade-ready)
   restartCine();
 }
+
+
+   }); // ✅ end DOMContentLoaded                       
