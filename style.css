@@ -28,7 +28,7 @@ body{
   background:#fff;
   color:#000;
   overflow-x:hidden;
-  padding-top:64px; /* ✅ content starts below fixed header */
+  padding-top:120px; /* ✅ content starts below fixed header */
 }
 
 /* HEADER (stays fixed, does NOT move) */
@@ -120,7 +120,7 @@ body{
 
 /* HERO (true full screen below header) */
 .hero{
-  height:calc(100vh - 64px);
+  height:calc(100vh - 120px);
   position:relative;
   overflow:hidden;
   background:#000;
@@ -286,12 +286,12 @@ body{
 
 /* DESKTOP */
 @media (min-width: 900px){
-  body{padding-top:74px}
+  body{padding-top:140px}
   .header{height:74px;padding:0 28px}
   .logo-spray{font-size:20px;letter-spacing:3px}
   .icon-svg{width:22px;height:22px}
 
-  .hero{height:calc(100vh - 74px)}
+  .hero{height:calc(100vh - 140px)}
   .hero-content{left:64px;right:auto;bottom:90px;max-width:560px}
   .hero-content h1{font-size:34px;letter-spacing:1.5px}
 
@@ -696,3 +696,25 @@ body{
 }
 
 .chat-panel[hidden]{display:none !important;}
+
+/* Sticky Utility Bar (Currency left, Chat right) */
+/* Mobile */
+.utility-bar{
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+/* Desktop */
+@media (min-width: 900px){
+  .utility-bar{ top: 74px; }
+}
