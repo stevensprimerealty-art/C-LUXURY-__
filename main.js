@@ -1,13 +1,9 @@
 /* =============================
-   C-LUXURY — FINAL main.js (FULL COPY/PASTE)
-   RULES YOU WANTED:
-   - Mini slider: swipe only (no options while swiping)
-   - Product options open ONLY when tapping BUY NOW chip
-   - Options are BELOW the card (.actions-panel)
-   - No arrivals auto-scroll
-   - Cinematic banner auto-fade (3.3s) + text fades too
-   - Currency auto-update (USD/NGN + toggle to NGN/USD on tap)
-   - AI chat box (💬) opens panel + closes product actions
+   C-LUXURY — FINAL main.js (v9)
+   - Currency toggles USD <-> NGN and updates ALL prices
+   - Fullscreen chat sheet like screenshot
+   - Mini slider swipe only
+   - BUY NOW chip opens actions below
    ============================= */
 
 /* ---------- Shopify helpers ---------- */
@@ -21,7 +17,7 @@ const SHOPIFY = {
     )}&quantity=${encodeURIComponent(qty)}`
 };
 
-/* ---------- Elements ---------- */
+/* ---------- Elements (header/menu/cart) ---------- */
 const menuBtn = document.getElementById("menuBtn");
 const menu = document.getElementById("menu");
 const closeMenu = document.getElementById("closeMenu");
@@ -32,6 +28,7 @@ const cartClose = document.getElementById("cartClose");
 const backdrop = document.getElementById("backdrop");
 const cartFrame = document.getElementById("cartFrame");
 
+/* ---------- Hero ---------- */
 const heroText = document.getElementById("heroText");
 const ringsWrap = document.getElementById("rings");
 const heroSlides = Array.from(document.querySelectorAll(".hero-slide"));
@@ -52,8 +49,8 @@ function closeMenuFn() {
     backdrop.hidden = true;
   }
 }
-if (menuBtn) menuBtn.addEventListener("click", openMenu);
-if (closeMenu) closeMenu.addEventListener("click", closeMenuFn);
+menuBtn?.addEventListener("click", openMenu);
+closeMenu?.addEventListener("click", closeMenuFn);
 
 /* ---------- Cart ---------- */
 function openCart() {
@@ -69,26 +66,40 @@ function closeCart() {
     backdrop.hidden = true;
   }
 }
-if (cartBtn) cartBtn.addEventListener("click", openCart);
-if (cartClose) cartClose.addEventListener("click", closeCart);
+cartBtn?.addEventListener("click", openCart);
+cartClose?.addEventListener("click", closeCart);
 
-/* ---------- Backdrop + ESC ---------- */
-if (backdrop) {
-  backdrop.addEventListener("click", () => {
-    closeMenuFn();
-    closeCart();
-    if (typeof closeAllActions === "function") closeAllActions();
-  });
+/* ---------- Product actions ---------- */
+const products = Array.from(document.querySelectorAll(".product"));
+
+function closeAllActions() {
+  products.forEach((x) => x.classList.remove("is-open"));
 }
+
+function openActions(card) {
+  closeAllActions();
+  card.classList.add("is-open");
+  syncActionLinks(card);
+}
+
+/* close panels on backdrop click */
+backdrop?.addEventListener("click", () => {
+  closeMenuFn();
+  closeCart();
+  closeAllActions();
+  closeChat();
+});
+
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeMenuFn();
     closeCart();
-    if (typeof closeAllActions === "function") closeAllActions();
+    closeAllActions();
+    closeChat();
   }
 });
 
-/* ---------- Hero slider + rings ---------- */
+/* ---------- Hero slider ---------- */
 const heroTexts = [
   "A NEW YEAR<br>WITH PRESENCE",
   "SILENCE<br>CONNOTES NOISE",
@@ -116,36 +127,30 @@ function buildRings() {
 }
 function setActiveRing(i) {
   if (!ringsWrap) return;
-  const all = ringsWrap.querySelectorAll(".ring");
-  all.forEach((r) => r.classList.remove("is-active"));
-  if (all[i]) all[i].classList.add("is-active");
+  ringsWrap.querySelectorAll(".ring").forEach((r) => r.classList.remove("is-active"));
+  ringsWrap.querySelectorAll(".ring")[i]?.classList.add("is-active");
 }
 function goToHero(i, resetTimer = false) {
   if (!heroSlides.length) return;
 
-  if (heroText) heroText.classList.add("fadeout");
+  heroText?.classList.add("fadeout");
 
   setTimeout(() => {
     heroSlides.forEach((s) => s.classList.remove("active"));
     heroSlides[i].classList.add("active");
-
     if (heroText) {
       heroText.innerHTML = heroTexts[i] || "";
       heroText.classList.remove("fadeout");
     }
-
     setActiveRing(i);
     heroIndex = i;
   }, 220);
 
   if (resetTimer) restartHeroTimer();
 }
-function nextHero() {
-  goToHero((heroIndex + 1) % heroSlides.length, false);
-}
 function restartHeroTimer() {
   if (heroTimer) clearInterval(heroTimer);
-  heroTimer = setInterval(nextHero, HERO_INTERVAL);
+  heroTimer = setInterval(() => goToHero((heroIndex + 1) % heroSlides.length), HERO_INTERVAL);
 }
 buildRings();
 restartHeroTimer();
@@ -167,6 +172,7 @@ function addToCartViaIframe(variantId) {
         resolve();
       }, 450);
     };
+
     document.body.appendChild(iframe);
   });
 }
@@ -184,41 +190,24 @@ function syncActionLinks(card) {
   if (buyNow) buyNow.href = url && url !== "#" ? url : "#";
 }
 
-/* ---------- Product actions open ONLY on BUY NOW chip ---------- */
-const products = Array.from(document.querySelectorAll(".product"));
-
-function closeAllActions() {
-  products.forEach((x) => x.classList.remove("is-open"));
-}
-
-function openActions(card) {
-  closeAllActions();
-  card.classList.add("is-open");
-  syncActionLinks(card);
-}
-
+/* ---------- BUY NOW chip opens options ---------- */
 products.forEach((p) => {
   const chip = p.querySelector(".buy-chip");
-  if (chip) {
-    chip.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openActions(p);
-    });
-  }
+  chip?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openActions(p);
+  });
 
   const panel = p.querySelector(".actions-panel");
-  if (panel) {
-    panel.addEventListener("click", (e) => e.stopPropagation());
-  }
+  panel?.addEventListener("click", (e) => e.stopPropagation());
 });
 
-// close when clicking outside products
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".product")) closeAllActions();
 });
 
-/* ---------- Add to cart (ACTIVE variant) ---------- */
+/* ---------- Add to cart ---------- */
 document.querySelectorAll(".addToCart").forEach((btn) => {
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -246,7 +235,7 @@ document.querySelectorAll(".addToCart").forEach((btn) => {
   });
 });
 
-/* ---------- Swift Buy (ACTIVE variant -> checkout, SAME TAB) ---------- */
+/* ---------- Swift Buy ---------- */
 document.querySelectorAll(".actions-panel a.swift").forEach((a) => {
   a.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -268,7 +257,6 @@ document.querySelectorAll(".actions-panel a.swift").forEach((a) => {
   });
 });
 
-/* ---------- Buy Now click normal ---------- */
 document.querySelectorAll(".actions-panel a.buyNow").forEach((a) => {
   a.addEventListener("click", (e) => e.stopPropagation());
 });
@@ -287,17 +275,22 @@ function setMiniActive(card, newIndex) {
   imgs.forEach((im) => im.classList.remove("is-active"));
   imgs[idx].classList.add("is-active");
 
+  // update title + price from active image (in USD base)
   const active = imgs[idx];
   const name = active.getAttribute("data-name") || "";
   const price = active.getAttribute("data-price") || "";
 
   const nameEl = card.querySelector(".p-name");
   const priceEl = card.querySelector(".p-price");
+
   if (nameEl) nameEl.textContent = name.toUpperCase();
-  if (priceEl) priceEl.textContent = price;
+  if (priceEl) priceEl.textContent = price; // will be converted by currency system
 
   card.dataset.miniIndex = String(idx);
   syncActionLinks(card);
+
+  // currency refresh for this card
+  applyCurrencyToCard(card);
 }
 
 function initMiniSliders() {
@@ -305,265 +298,211 @@ function initMiniSliders() {
 
   cards.forEach((card) => {
     const imgs = Array.from(card.querySelectorAll(".mini-media img"));
-    const startIdx = Math.max(
-      0,
-      imgs.findIndex((i) => i.classList.contains("is-active"))
-    );
+    const startIdx = Math.max(0, imgs.findIndex((i) => i.classList.contains("is-active")));
     setMiniActive(card, startIdx);
 
     const media = card.querySelector(".mini-media");
     if (!media) return;
-
     media.style.touchAction = "pan-y";
 
     let startX = 0;
     let dx = 0;
     let tracking = false;
 
-    media.addEventListener(
-      "touchstart",
-      (e) => {
-        if (!e.touches || !e.touches[0]) return;
+    media.addEventListener("touchstart", (e) => {
+      if (!e.touches?.[0]) return;
+      card.classList.remove("is-open");
+      tracking = true;
+      startX = e.touches[0].clientX;
+      dx = 0;
+    }, { passive: true });
 
-        card.classList.remove("is-open"); // close options while swiping
-        tracking = true;
-        startX = e.touches[0].clientX;
-        dx = 0;
-      },
-      { passive: true }
-    );
+    media.addEventListener("touchmove", (e) => {
+      if (!tracking || !e.touches?.[0]) return;
+      dx = e.touches[0].clientX - startX;
+      if (Math.abs(dx) > 12) e.preventDefault();
+    }, { passive: false });
 
-    media.addEventListener(
-      "touchmove",
-      (e) => {
-        if (!tracking || !e.touches || !e.touches[0]) return;
-        dx = e.touches[0].clientX - startX;
+    media.addEventListener("touchend", () => {
+      if (!tracking) return;
+      tracking = false;
 
-        if (Math.abs(dx) > 12) {
-          e.preventDefault(); // stop vertical scroll when horizontal swipe
-        }
-      },
-      { passive: false }
-    );
+      if (Math.abs(dx) >= 35) {
+        const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
+        if (dx < 0) setMiniActive(card, cur + 1);
+        else setMiniActive(card, cur - 1);
+      }
+    }, { passive: true });
 
-    media.addEventListener(
-      "touchend",
-      () => {
-        if (!tracking) return;
-        tracking = false;
-
-        if (Math.abs(dx) >= 35) {
-          const cur = parseInt(card.dataset.miniIndex || "0", 10) || 0;
-          if (dx < 0) setMiniActive(card, cur + 1);
-          else setMiniActive(card, cur - 1);
-        }
-        // tap does nothing
-      },
-      { passive: true }
-    );
-
-    media.addEventListener(
-      "touchcancel",
-      () => {
-        tracking = false;
-        dx = 0;
-      },
-      { passive: true }
-    );
+    media.addEventListener("touchcancel", () => {
+      tracking = false;
+      dx = 0;
+    }, { passive: true });
   });
 }
 initMiniSliders();
 
 /* ==========================================================
-   C-LUXURY: Banner + Currency + AI Chat
+   CURRENCY SYSTEM — converts ALL prices on your page
+   Base prices are USD in your HTML data-price="$87.41"
    ========================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-  /* ---------- 1) CINEMATIC BANNER AUTO FADE ---------- */
-  const banner = document.getElementById("cineBanner");
-  if (banner) {
-    const slides = Array.from(banner.querySelectorAll(".cine-slide"));
-    const textEl = document.getElementById("cineText");
-    const dotsWrap = document.getElementById("cineDots");
 
-    if (dotsWrap && slides.length) {
-      const texts = [
-        "A new standard of streetwear",
-        "Understated, intentional",
-        "Unmistakably bold"
-      ];
+const currencyBtn = document.getElementById("currencyBtn");
+const currencyLabel = document.getElementById("currencyLabel");
+const currencyRateEl = document.getElementById("currencyRate");
 
-      let i = 0;
-      let timer = null;
+let currencyMode = "USD"; // USD or NGN
+let usdToNgn = null;
 
-      // build dots
-      dotsWrap.innerHTML = "";
-      slides.forEach((_, idx) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "cine-dot" + (idx === 0 ? " is-active" : "");
-        b.setAttribute("aria-label", `Banner slide ${idx + 1}`);
-        b.addEventListener("click", () => go(idx, true));
-        dotsWrap.appendChild(b);
-      });
+function parseUsd(priceStr) {
+  // expects "$87.41"
+  const n = Number(String(priceStr).replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
 
-      const dots = Array.from(dotsWrap.querySelectorAll(".cine-dot"));
+function formatMoney(amount, mode) {
+  if (!Number.isFinite(amount)) return "—";
+  if (mode === "USD") return `$${amount.toFixed(2)}`;
+  // NGN format
+  return `₦${Math.round(amount).toLocaleString("en-NG")}`;
+}
 
-      function go(next, userClick = false) {
-        slides[i].classList.remove("is-active");
-        dots[i].classList.remove("is-active");
+function applyCurrencyToCard(card) {
+  if (!card) return;
 
-        i = next;
+  const activeImg = card.querySelector(".mini-media img.is-active");
+  const priceEl = card.querySelector(".p-price");
+  if (!activeImg || !priceEl) return;
 
-        slides[i].classList.add("is-active");
-        dots[i].classList.add("is-active");
+  const baseUsd = parseUsd(activeImg.getAttribute("data-price") || "");
+  if (!baseUsd) return;
 
-        if (textEl) {
-          textEl.classList.remove("is-show");
-          setTimeout(() => {
-            textEl.textContent = texts[i] || texts[0];
-            textEl.classList.add("is-show");
-          }, 220);
-        }
+  if (currencyMode === "USD") {
+    priceEl.textContent = formatMoney(baseUsd, "USD");
+  } else {
+    if (!usdToNgn) return;
+    priceEl.textContent = formatMoney(baseUsd * usdToNgn, "NGN");
+  }
+}
 
-        if (userClick) restart();
-      }
+function applyCurrencyEverywhere() {
+  document.querySelectorAll(".arrivals-card").forEach((card) => applyCurrencyToCard(card));
+}
 
-      function start() {
-        slides.forEach((s, idx) => s.classList.toggle("is-active", idx === 0));
-        dots.forEach((d, idx) => d.classList.toggle("is-active", idx === 0));
-        if (textEl) {
-          textEl.textContent = texts[0];
-          textEl.classList.add("is-show");
-        }
-        timer = setInterval(() => go((i + 1) % slides.length, false), 3300);
-      }
+function renderCurrencyPill() {
+  if (!currencyLabel || !currencyRateEl) return;
 
-      function restart() {
-        clearInterval(timer);
-        timer = setInterval(() => go((i + 1) % slides.length, false), 3300);
-      }
+  if (currencyMode === "USD") {
+    currencyLabel.textContent = "USD";
+    currencyRateEl.textContent = usdToNgn ? `1$ = ₦${Math.round(usdToNgn).toLocaleString("en-NG")}` : "—";
+  } else {
+    currencyLabel.textContent = "NGN";
+    currencyRateEl.textContent = usdToNgn ? `₦1 = $${(1 / usdToNgn).toFixed(6)}` : "—";
+  }
+}
 
-      start();
+async function fetchUsdToNgn() {
+  try {
+    // source 1
+    const r1 = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
+    const j1 = await r1.json();
+    if (j1?.rates?.NGN) {
+      usdToNgn = Number(j1.rates.NGN);
+      renderCurrencyPill();
+      applyCurrencyEverywhere();
+      return;
     }
-  }
 
-  /* ---------- 2) CURRENCY AUTO UPDATE (USD/NGN) ---------- */
-  const rateEl = document.getElementById("currencyRate");
-  const labelEl = document.getElementById("currencyLabel");
-  const currencyBtn = document.getElementById("currencyBtn");
-
-  let currencyMode = "USDNGN"; // "USDNGN" or "NGNUSD"
-  let lastUsdToNgn = null;
-
-  function renderRate() {
-    if (!rateEl || !labelEl || !lastUsdToNgn) return;
-
-    if (currencyMode === "USDNGN") {
-      labelEl.textContent = "USD/NGN";
-      rateEl.textContent = lastUsdToNgn.toFixed(2);
-    } else {
-      labelEl.textContent = "NGN/USD";
-      rateEl.textContent = (1 / lastUsdToNgn).toFixed(6);
+    // fallback
+    const r2 = await fetch("https://api.exchangerate.host/latest?base=USD&symbols=NGN", { cache: "no-store" });
+    const j2 = await r2.json();
+    if (j2?.rates?.NGN) {
+      usdToNgn = Number(j2.rates.NGN);
+      renderCurrencyPill();
+      applyCurrencyEverywhere();
+      return;
     }
+
+    throw new Error("No NGN rate");
+  } catch (e) {
+    if (currencyRateEl) currencyRateEl.textContent = "—";
   }
+}
 
-  if (currencyBtn) {
-    currencyBtn.addEventListener("click", () => {
-      currencyMode = currencyMode === "USDNGN" ? "NGNUSD" : "USDNGN";
-      renderRate();
-    });
-  }
+currencyBtn?.addEventListener("click", () => {
+  currencyMode = currencyMode === "USD" ? "NGN" : "USD";
+  renderCurrencyPill();
+  applyCurrencyEverywhere();
+});
 
-  async function fetchRate() {
-    try {
-      let data = null;
+// initial
+fetchUsdToNgn();
+setInterval(fetchUsdToNgn, 30 * 60 * 1000);
 
-      // 1) main source
-      try {
-        const res = await fetch("https://open.er-api.com/v6/latest/USD", {
-          cache: "no-store"
-        });
-        data = await res.json();
-      } catch (_) {
-        data = null;
-      }
+/* ==========================================================
+   CHAT SHEET — fullscreen like your screenshot
+   ========================================================== */
 
-      // 2) fallback source
-      if (!data?.rates?.NGN) {
-        const res2 = await fetch(
-          "https://api.exchangerate.host/latest?base=USD&symbols=NGN",
-          { cache: "no-store" }
-        );
-        const data2 = await res2.json();
-        const ngn2 = data2?.rates?.NGN;
-        if (!ngn2) throw new Error("NGN rate missing");
-        lastUsdToNgn = Number(ngn2);
-        renderRate();
-        return;
-      }
+const chatBtn = document.getElementById("chatBtn");
+const chatSheet = document.getElementById("chatSheet");
+const chatClose = document.getElementById("chatClose");
+const chatInput = document.getElementById("chatInput");
+const chatSend = document.getElementById("chatSend");
+const chatMessages = document.getElementById("chatMessages");
 
-      lastUsdToNgn = Number(data.rates.NGN);
-      renderRate();
-    } catch (e) {
-      if (rateEl) rateEl.textContent = "—";
-    }
-  }
+function openChat() {
+  closeAllActions();
+  if (!chatSheet) return;
+  chatSheet.hidden = false;
+  chatSheet.setAttribute("aria-hidden", "false");
+  setTimeout(() => chatInput?.focus(), 150);
+}
 
-  fetchRate();
-  setInterval(fetchRate, 30 * 60 * 1000); // every 30 minutes
+function closeChat() {
+  if (!chatSheet) return;
+  chatSheet.hidden = true;
+  chatSheet.setAttribute("aria-hidden", "true");
+}
 
-  /* ---------- 3) AI CHAT BOX (opens panel) ---------- */
-  const chatBtn = document.getElementById("chatBtn");
-  const chatPanel = document.getElementById("chatPanel");
-  const chatClose = document.getElementById("chatClose");
-  const chatForm = document.getElementById("chatForm");
-  const chatInput = document.getElementById("chatInput");
-  const chatBody = document.getElementById("chatBody");
+chatBtn?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  openChat();
+});
+chatClose?.addEventListener("click", closeChat);
 
-  function openChat() {
-    if (typeof closeAllActions === "function") closeAllActions();
-    if (!chatPanel) return;
-    chatPanel.hidden = false;
-    chatPanel.setAttribute("aria-hidden", "false");
-    setTimeout(() => chatInput?.focus(), 120);
-  }
+function addChatBubble(text, who = "user") {
+  if (!chatMessages) return;
+  const div = document.createElement("div");
+  div.className = `chat-bubble ${who}`;
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
-  function closeChat() {
-    if (!chatPanel) return;
-    chatPanel.hidden = true;
-    chatPanel.setAttribute("aria-hidden", "true");
-  }
+document.querySelectorAll(".instant-item").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (!chatInput) return;
+    chatInput.value = btn.textContent.trim();
+    chatInput.focus();
+  });
+});
 
-  if (chatBtn) chatBtn.addEventListener("click", openChat);
-  if (chatClose) chatClose.addEventListener("click", closeChat);
+function sendMessage() {
+  const msg = (chatInput?.value || "").trim();
+  if (!msg) return;
 
-  function addBubble(text, who = "user") {
-    if (!chatBody) return;
-    const div = document.createElement("div");
-    div.className = `chat-bubble ${who}`;
-    div.textContent = text;
-    chatBody.appendChild(div);
-    chatBody.scrollTop = chatBody.scrollHeight;
-  }
+  addChatBubble(msg, "user");
+  chatInput.value = "";
 
-  let botTimer = null;
-  function botReplyAfter3s() {
-    if (botTimer) clearTimeout(botTimer);
-    botTimer = setTimeout(() => {
-      addBubble("How can we assist you today?", "bot");
-    }, 3000);
-  }
+  // simple bot mock reply
+  setTimeout(() => addChatBubble("Thanks — we’ll reply shortly.", "bot"), 700);
+}
 
-  if (chatForm) {
-    chatForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const msg = (chatInput?.value || "").trim();
-      if (!msg) return;
-
-      addBubble(msg, "user");
-      if (chatInput) chatInput.value = "";
-
-      botReplyAfter3s();
-    });
+chatSend?.addEventListener("click", sendMessage);
+chatInput?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    sendMessage();
   }
 });
