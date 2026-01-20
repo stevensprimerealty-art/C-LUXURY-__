@@ -244,7 +244,7 @@ body{
   scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
 }
 .products::-webkit-scrollbar{height:0}
-.product{position:relative;min-width:240px;scroll-snap-align:start}
+.product{position:relative;scroll-snap-align:start}
 
 /* ✅ FIX: only style direct product images, NOT mini-media images */
 .product > img{
@@ -565,7 +565,7 @@ body{
   left:12px;
   right:12px;
   bottom:14px;
-  z-index:3000;
+  z-index:5000;
   display:flex;
   justify-content:space-between;
   align-items:center;
