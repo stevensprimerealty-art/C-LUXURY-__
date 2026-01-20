@@ -767,6 +767,5 @@ body{
 .mini-media img{
   -webkit-user-drag: none;
   user-select: none;
-  pointer-events: none; /* swipe handled by .mini-media container */
+  pointer-events: auto; /* ✅ allow interaction */
 }
-
