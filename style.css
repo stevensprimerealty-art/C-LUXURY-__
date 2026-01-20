@@ -756,3 +756,17 @@ body{
   letter-spacing:.2px;
 }
 .chat-sheet[hidden]{display:none !important;}
+
+/* FIX: allow mini slider swipe on iOS */
+.mini-media{
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mini-media img{
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none; /* swipe handled by .mini-media container */
+}
+
