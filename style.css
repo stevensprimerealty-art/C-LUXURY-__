@@ -767,5 +767,10 @@ body{
 .mini-media img{
   -webkit-user-drag: none;
   user-select: none;
-  pointer-events: auto; /* ✅ allow interaction */
+  pointer-events: none; /* ✅ IMPORTANT: swipe handled by container */
+}
+
+/* ✅ Only active image can be “clickable” if needed */
+.arrivals-card .mini-media img.is-active{
+  pointer-events: auto;
 }
